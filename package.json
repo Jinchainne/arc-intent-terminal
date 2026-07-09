@@ -6,7 +6,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "typecheck": "next typegen && tsc --noEmit",
+    "typecheck": "next typegen && node scripts/ensure-next-types.mjs && tsc --noEmit",
     "arc:check": "node scripts/check-arc-config.mjs",
     "arc:refresh-docs": "node scripts/refresh-arc-docs.mjs",
     "arc:seed": "node scripts/seed-sim-data.mjs",

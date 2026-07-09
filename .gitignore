@@ -8,3 +8,6 @@ coverage
 *.log
 .vercel
 data/sim-state.json
+tsconfig.tsbuildinfo
+
+.vercel
