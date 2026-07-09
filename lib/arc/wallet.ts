@@ -23,6 +23,18 @@ export async function connectInjectedWallet() {
   return accounts[0] ?? null;
 }
 
+export async function getInjectedAccounts() {
+  if (typeof window === "undefined" || !window.ethereum) {
+    return [] as string[];
+  }
+
+  const accounts = (await window.ethereum.request({
+    method: "eth_accounts"
+  })) as string[];
+
+  return accounts;
+}
+
 export async function getInjectedChainId() {
   if (typeof window === "undefined" || !window.ethereum) {
     return null;

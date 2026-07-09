@@ -3,10 +3,10 @@ import { Card } from "@/components/ui/Card";
 export function ModelStatus({ provider }: { provider: string }) {
   const details =
     provider === "groq"
-      ? "Groq path active for deeper reasoning requests."
+      ? "Groq path is active. This works on hosted deployments when a Groq key is configured."
       : provider === "fallback"
-        ? "Groq or Ollama fallback path was used."
-        : "Ollama local model path is active by default.";
+        ? "Fallback path was used. If this is the Vercel site, local Ollama is not reachable from the cloud."
+        : "Ollama local path is active. This only works when you run the app locally on the same machine as Ollama.";
 
   return (
     <Card className="p-4">

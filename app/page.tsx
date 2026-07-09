@@ -18,7 +18,12 @@ import { TerminalHeader } from "@/components/dashboard/TerminalHeader";
 import { TradeControls } from "@/components/dashboard/TradeControls";
 import { WalletPanel } from "@/components/dashboard/WalletPanel";
 import { ARC_CHAIN_ID, ARC_MARKETS, SIM_TICK_MS } from "@/lib/arc/constants";
-import { connectInjectedWallet, ensureArcNetwork, getInjectedChainId } from "@/lib/arc/wallet";
+import {
+  connectInjectedWallet,
+  ensureArcNetwork,
+  getInjectedAccounts,
+  getInjectedChainId
+} from "@/lib/arc/wallet";
 import type { MarketSymbol, SimulationState } from "@/lib/trading/types";
 import { formatAddress, formatCurrency } from "@/lib/utils/format";
 import { formatRelativeMs, formatUtc } from "@/lib/utils/time";
@@ -57,22 +62,45 @@ export default function Page() {
     setChainId(await getInjectedChainId());
   }
 
+  function resetLocalState() {
+    if (typeof window !== "undefined") {
+      window.localStorage.removeItem("arc.walletAddress");
+      window.localStorage.removeItem("arc.selectedMarket");
+    }
+    setWalletAddress("0x0000000000000000000000000000000000000000");
+    setWalletConnected(false);
+    refreshDashboard("0x0000000000000000000000000000000000000000").catch(() => undefined);
+  }
+
   useEffect(() => {
-    const storedAddress =
-      typeof window !== "undefined" ? window.localStorage.getItem("arc.walletAddress") : null;
-    const storedMarket =
-      typeof window !== "undefined" ? window.localStorage.getItem("arc.selectedMarket") : null;
-    if (storedMarket && ARC_MARKETS.includes(storedMarket as MarketSymbol)) {
-      setSelectedMarket(storedMarket as MarketSymbol);
+    async function bootstrap() {
+      const storedMarket =
+        typeof window !== "undefined" ? window.localStorage.getItem("arc.selectedMarket") : null;
+      if (storedMarket && ARC_MARKETS.includes(storedMarket as MarketSymbol)) {
+        setSelectedMarket(storedMarket as MarketSymbol);
+      }
+
+      const accounts = await getInjectedAccounts().catch(() => []);
+      const liveAddress = accounts[0] ?? null;
+
+      if (liveAddress) {
+        setWalletAddress(liveAddress);
+        setWalletConnected(true);
+        await refreshDashboard(liveAddress);
+      } else {
+        if (typeof window !== "undefined") {
+          window.localStorage.removeItem("arc.walletAddress");
+        }
+        setWalletConnected(false);
+        setWalletAddress("0x0000000000000000000000000000000000000000");
+        await refreshDashboard("0x0000000000000000000000000000000000000000");
+      }
+
+      const detectedChainId = await getInjectedChainId().catch(() => null);
+      setChainId(detectedChainId);
     }
-    if (storedAddress) {
-      setWalletAddress(storedAddress);
-      setWalletConnected(true);
-      refreshDashboard(storedAddress).catch(() => undefined);
-    } else {
-      refreshDashboard().catch(() => undefined);
-    }
-    getInjectedChainId().then(setChainId).catch(() => setChainId(null));
+
+    bootstrap().catch(() => undefined);
   }, []);
 
   useEffect(() => {
@@ -212,6 +240,7 @@ export default function Page() {
               walletConnected={walletConnected}
               onConnect={connectWallet}
               onSwitch={switchToArc}
+              onReset={resetLocalState}
             />
             <RiskPanel state={state} />
             <ModelStatus provider={provider} />

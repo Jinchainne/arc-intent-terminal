@@ -16,6 +16,7 @@ type WalletPanelProps = {
   walletConnected: boolean;
   onConnect: () => Promise<void>;
   onSwitch: () => Promise<void>;
+  onReset: () => void;
 };
 
 export function WalletPanel({
@@ -25,7 +26,8 @@ export function WalletPanel({
   chainId,
   walletConnected,
   onConnect,
-  onSwitch
+  onSwitch,
+  onReset
 }: WalletPanelProps) {
   return (
     <Card className="p-4">
@@ -43,6 +45,9 @@ export function WalletPanel({
         <Button onClick={onConnect}>Connect Wallet</Button>
         <Button variant="ghost" onClick={onSwitch}>
           Switch to Arc Testnet
+        </Button>
+        <Button variant="ghost" onClick={onReset}>
+          Clear Local State
         </Button>
         {walletConnected ? (
           <a

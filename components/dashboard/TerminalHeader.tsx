@@ -31,13 +31,13 @@ export function TerminalHeader({
       <div className="absolute inset-0 bg-grid bg-[size:24px_24px] opacity-25" />
       <div className="relative mb-4 flex flex-wrap items-center justify-between gap-3 border-b border-terminal-border pb-3 text-[11px] uppercase tracking-[0.24em] text-terminal-muted">
         <div className="flex flex-wrap items-center gap-4">
-          <span>Q Claude × Quant</span>
-          <span>Markov • Kelly • Self-Learn</span>
-          <span>Global Rank #{globalRank}</span>
+          <span>Arc Testnet Telemetry</span>
+          <span>USDC Simulation Engine</span>
+          <span>Session Rank #{globalRank}</span>
         </div>
         <div className="flex flex-wrap items-center gap-4">
           <span>Pace ${pace.toFixed(0)}/hr</span>
-          <span>Out-performing by ${outperformDelta.toFixed(0)}</span>
+          <span>Session Delta ${outperformDelta.toFixed(0)}</span>
           <span>{utcTime.slice(11, 19)}</span>
         </div>
       </div>
