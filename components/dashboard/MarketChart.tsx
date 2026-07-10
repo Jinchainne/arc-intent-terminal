@@ -1,6 +1,6 @@
 "use client";
 
-import { Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { Area, ComposedChart, Line, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 
 import { Card } from "@/components/ui/Card";
 import type { MarketSymbol, SimulationState } from "@/lib/trading/types";
@@ -34,12 +34,22 @@ export function MarketChart({
       </div>
       <div className="h-72">
         <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={data}>
+          <ComposedChart data={data}>
             <XAxis dataKey="time" stroke="#73806f" tick={{ fontSize: 10 }} minTickGap={24} />
             <YAxis stroke="#73806f" tick={{ fontSize: 10 }} domain={["auto", "auto"]} width={60} />
             <Tooltip contentStyle={{ background: "#f4efdc", border: "1px solid #bdb39a", fontSize: 12 }} />
-            <Line type="monotone" dataKey="price" stroke="#b9d3ad" dot={false} strokeWidth={2} />
-          </LineChart>
+            <Area type="monotone" dataKey="price" fill="#dff0de" fillOpacity={0.45} stroke="none" />
+            <Line
+              isAnimationActive
+              animationDuration={420}
+              type="monotone"
+              dataKey="price"
+              stroke="#3f8f57"
+              activeDot={{ r: 5, stroke: "#3f8f57", strokeWidth: 1, fill: "#f4efdc" }}
+              dot={false}
+              strokeWidth={2}
+            />
+          </ComposedChart>
         </ResponsiveContainer>
       </div>
     </Card>

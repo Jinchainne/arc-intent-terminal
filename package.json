@@ -10,7 +10,8 @@
     "arc:check": "node scripts/check-arc-config.mjs",
     "arc:refresh-docs": "node scripts/refresh-arc-docs.mjs",
     "arc:seed": "node scripts/seed-sim-data.mjs",
-    "arc:embed-docs": "tsx lib/docs/embedDocs.ts"
+    "arc:embed-docs": "tsx lib/docs/embedDocs.ts",
+    "arc:build-ledger": "node scripts/build-intent-ledger.mjs"
   },
   "dependencies": {
     "clsx": "^2.1.1",
@@ -27,6 +28,7 @@
     "@types/react-dom": "^19.1.6",
     "autoprefixer": "^10.4.21",
     "postcss": "^8.5.6",
+    "solc": "^0.8.36",
     "tailwindcss": "^3.4.17",
     "tsx": "^4.20.3",
     "typescript": "^5.8.3"

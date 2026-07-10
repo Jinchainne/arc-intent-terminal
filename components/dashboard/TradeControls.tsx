@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/Input";
 type TradeControlsProps = {
   onRefresh: () => Promise<void>;
   lastSignalMarket?: string;
+  ledgerAddress: string;
   signal?: {
     action: "BUY" | "SELL" | "HOLD";
     confidence: number;
@@ -17,7 +18,7 @@ type TradeControlsProps = {
   } | null;
 };
 
-export function TradeControls({ onRefresh, lastSignalMarket, signal }: TradeControlsProps) {
+export function TradeControls({ onRefresh, lastSignalMarket, ledgerAddress, signal }: TradeControlsProps) {
   const [mode, setMode] = useState<"paper" | "testnet-intent" | "testnet-contract">("paper");
   const [confirmed, setConfirmed] = useState(false);
   const [message, setMessage] = useState(
@@ -37,6 +38,7 @@ export function TradeControls({ onRefresh, lastSignalMarket, signal }: TradeCont
           mode,
           confirmed,
           market: lastSignalMarket,
+          ledgerAddress,
           notionalUsdc: notional,
           side: signal?.action ?? "HOLD",
           confidence: signal?.confidence ?? 0,
@@ -128,6 +130,23 @@ export function TradeControls({ onRefresh, lastSignalMarket, signal }: TradeCont
         <Button variant="ghost" onClick={onRefresh}>
           Run Cycle
         </Button>
+      </div>
+      <div className="mt-4 grid gap-2 text-[11px] text-terminal-muted md:grid-cols-3">
+        <div className="border border-terminal-border bg-terminal-panelAlt px-3 py-2">
+          `paper mode`
+          <br />
+          Simulated fills only. This mode never creates a blockchain transaction hash.
+        </div>
+        <div className="border border-terminal-border bg-terminal-panelAlt px-3 py-2">
+          `testnet-intent mode`
+          <br />
+          Prepares and stores a local intent record. Useful for demo flow, still no on-chain tx.
+        </div>
+        <div className="border border-terminal-border bg-terminal-panelAlt px-3 py-2">
+          `testnet-contract mode`
+          <br />
+          Requires wallet connect, confirmation checkbox, deployed ledger address, and safety flags disabled in `.env`.
+        </div>
       </div>
       <div className="mt-4 border border-terminal-border bg-terminal-panelAlt p-3 text-xs text-terminal-text">{message}</div>
     </Card>

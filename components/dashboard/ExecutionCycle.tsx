@@ -4,7 +4,13 @@ import { Card } from "@/components/ui/Card";
 
 const phases: ExecutionPhase[] = ["Scan", "Detect", "Validate", "Size", "Fill", "Settle"];
 
-export function ExecutionCycle({ currentPhase }: { currentPhase: ExecutionPhase }) {
+export function ExecutionCycle({
+  currentPhase,
+  beat = 0
+}: {
+  currentPhase: ExecutionPhase;
+  beat?: number;
+}) {
   const activeIndex = phases.indexOf(currentPhase);
 
   return (
@@ -22,12 +28,13 @@ export function ExecutionCycle({ currentPhase }: { currentPhase: ExecutionPhase 
               key={phase}
               className={[
                 "border px-3 py-4 text-center text-xs uppercase tracking-[0.2em]",
-                isActive && "animate-pulseLine border-terminal-positive bg-[#dff0de] text-terminal-positive",
+                isActive && "animate-pulseLine border-terminal-positive bg-[#dff0de] text-terminal-positive shadow-[inset_0_0_0_1px_rgba(35,147,77,0.15)]",
                 isPast && "border-terminal-border bg-terminal-panelAlt text-terminal-text",
                 !isActive && !isPast && "border-terminal-border/60 bg-transparent text-terminal-muted"
               ]
                 .filter(Boolean)
                 .join(" ")}
+              style={isActive ? { transform: `translateY(${Math.sin(beat / 2) * -2}px)` } : undefined}
             >
               {phase}
             </div>

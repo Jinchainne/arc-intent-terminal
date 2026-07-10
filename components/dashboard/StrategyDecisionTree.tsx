@@ -1,7 +1,7 @@
 import { Card } from "@/components/ui/Card";
 import type { SimulationState } from "@/lib/trading/types";
 
-export function StrategyDecisionTree({ state }: { state: SimulationState | null }) {
+export function StrategyDecisionTree({ state, beat = 0 }: { state: SimulationState | null; beat?: number }) {
   const decision = state?.decision;
 
   return (
@@ -34,7 +34,7 @@ export function StrategyDecisionTree({ state }: { state: SimulationState | null 
                   fill="none"
                   stroke={edge.active ? "#6ca66a" : "#a59d89"}
                   strokeWidth={edge.active ? 2.4 : 1.2}
-                  strokeDasharray={edge.active ? "0" : "4 3"}
+                  strokeDasharray={edge.active ? `${8 + (beat % 8)} 6` : "4 3"}
                 />
                 {edge.label ? (
                   <text x={midX} y={(startY + endY) / 2 - 6} textAnchor="middle" fontSize="10" fill="#7a725d">
@@ -55,7 +55,16 @@ export function StrategyDecisionTree({ state }: { state: SimulationState | null 
                     : { fill: "#f6f1de", stroke: "#b7ae93", text: "#5c5545" };
             return (
               <g key={node.id}>
-                <rect x={node.x} y={node.y} width="92" height="36" rx="3" fill={tone.fill} stroke={tone.stroke} />
+                <rect
+                  x={node.x}
+                  y={node.y}
+                  width="92"
+                  height="36"
+                  rx="3"
+                  fill={tone.fill}
+                  stroke={tone.stroke}
+                  style={node.status === "active" ? { transform: `translateY(${Math.sin(beat / 2) * -2}px)` } : undefined}
+                />
                 <text x={node.x + 46} y={node.y + 22} textAnchor="middle" fontSize="11" fill={tone.text}>
                   {node.label}
                 </text>

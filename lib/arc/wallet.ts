@@ -1,7 +1,8 @@
 import { ARC_CHAIN_ID, ARC_EXPLORER_URL, ARC_RPC_URL } from "@/lib/arc/constants";
 import { arcTestnet } from "@/lib/arc/chain";
+import { arcTradeIntentLedgerArtifact } from "@/lib/arc/intentLedgerArtifact";
 import { arcTradeIntentLedgerAbi } from "@/lib/arc/intentLedger";
-import { createWalletClient, custom, isAddress } from "viem";
+import { createPublicClient, createWalletClient, custom, http, isAddress } from "viem";
 
 declare global {
   interface Window {
@@ -110,4 +111,46 @@ export async function logTradeIntentWithBrowserWallet(input: {
   });
 
   return hash;
+}
+
+export async function deployTradeIntentLedgerWithBrowserWallet() {
+  if (typeof window === "undefined" || !window.ethereum) {
+    throw new Error("Injected wallet not found.");
+  }
+
+  await ensureArcNetwork();
+
+  const account = await connectInjectedWallet();
+  if (!account) {
+    throw new Error("Wallet connection failed.");
+  }
+
+  const walletClient = createWalletClient({
+    chain: arcTestnet,
+    transport: custom(window.ethereum)
+  });
+
+  const publicClient = createPublicClient({
+    chain: arcTestnet,
+    transport: http(ARC_RPC_URL)
+  });
+
+  const hash = await walletClient.deployContract({
+    account: account as `0x${string}`,
+    chain: arcTestnet,
+    abi: arcTradeIntentLedgerArtifact.abi,
+    bytecode: arcTradeIntentLedgerArtifact.bytecode
+  });
+
+  const receipt = await publicClient.waitForTransactionReceipt({ hash });
+  const contractAddress = receipt.contractAddress;
+
+  if (!contractAddress) {
+    throw new Error("Contract deployment receipt did not include a contract address.");
+  }
+
+  return {
+    hash,
+    contractAddress
+  };
 }

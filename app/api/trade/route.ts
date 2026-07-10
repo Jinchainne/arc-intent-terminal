@@ -22,6 +22,7 @@ export async function POST(request: Request) {
     confidence?: number;
     reason?: string;
     side?: "BUY" | "SELL" | "HOLD";
+    ledgerAddress?: string;
     intentId?: string;
     txHash?: string;
   };
@@ -114,7 +115,7 @@ export async function POST(request: Request) {
     ok: true,
     message: `Testnet intent acknowledged for ${market}. Browser wallet confirmation is still required for any on-chain log.`,
     intentId,
-    ledgerAddress: process.env.NEXT_PUBLIC_TRADE_INTENT_LEDGER_ADDRESS ?? "",
+    ledgerAddress: body.ledgerAddress ?? process.env.NEXT_PUBLIC_TRADE_INTENT_LEDGER_ADDRESS ?? "",
     intent: {
       market,
       side,

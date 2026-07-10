@@ -1,100 +1,370 @@
 # Arc Quant Agent Dashboard
 
-Arc Quant Agent Dashboard is a local realtime Arc Testnet and simulation terminal for USDC-denominated paper trading workflows, wallet checks, Arc RPC health, and model-assisted explanations.
+Arc Quant Agent Dashboard is a local-first Arc Testnet builder tool: a realtime terminal-style dashboard for simulation, wallet checks, model-assisted reasoning, and optional user-confirmed testnet trade-intent logging.
 
-## What this is
+This repo is designed for builders, demos, hackathons, and local prototyping. It is not a production trading bot.
 
-- A Next.js dashboard for Arc Testnet simulation and testnet intent logging
-- A quant-style terminal UI with realtime simulated market and risk state
-- A local-first MVP designed for 16GB RAM with Ollama and optional Groq
+## What this tool does
 
-## What this is not
+- Runs a live Arc Testnet dashboard with quant-terminal style panels
+- Simulates strategy signals, risk checks, fills, PnL, and Monte Carlo outputs
+- Connects to an injected browser wallet for Arc Testnet checks
+- Routes agent questions to local Ollama or Groq
+- Supports optional browser-wallet confirmation for testnet contract intent logging
+- Persists local simulation state to disk
 
-- Not real trading
-- Not investment advice
-- Not mainnet
-- Not production automation
-- Not a promise of profit or real PnL
+## What this tool does not do
 
-## Hardware assumptions
+- No mainnet trading
+- No hidden auto-trading
+- No centralized exchange execution
+- No private key execution flow
+- No promise of real profit
+- No real-money automation
 
-- 16GB RAM
-- Ollama with `qwen2.5-coder:7b`
-- Ollama with `nomic-embed-text`
+## Builder mental model
 
-## Install
+There are 3 separate execution layers in this project:
 
-```bash
-npm install
-```
+1. `Simulation layer`
+- Always available
+- Generates signals, fills, PnL, feed, chart activity
+- Produces no blockchain transaction
 
-## Ollama setup
+2. `Intent layer`
+- Stores an intent locally
+- Useful for proving the workflow and UI state transitions
+- Still does not produce an on-chain transaction by itself
+
+3. `Contract layer`
+- Requires browser wallet confirmation
+- Requires Arc Testnet contract address
+- Can produce a real Arc Testnet transaction hash
+
+If you are running the tool locally and do not see a tx hash, the most common reason is simple:
+
+- you are still in `paper mode`, or
+- contract mode is disabled by env, or
+- no contract address is configured, or
+- wallet has not confirmed the transaction
+
+## Requirements
+
+- Node.js 20+ or newer
+- npm
+- 16GB RAM recommended
+- Ollama installed locally if you want local models
+- Browser wallet such as MetaMask or Rabby for Arc Testnet flows
+
+## Local model setup
+
+Pull the recommended models:
 
 ```bash
 ollama pull qwen2.5-coder:7b
 ollama pull nomic-embed-text
 ```
 
-## Groq setup
-
-Copy `.env.example` to `.env` and optionally set `GROQ_API_KEY`.
-
-## Run
+Check Ollama:
 
 ```bash
+curl http://localhost:11434/api/tags
+```
+
+On Windows PowerShell:
+
+```powershell
+Invoke-RestMethod http://localhost:11434/api/tags
+```
+
+## Environment setup
+
+Copy:
+
+```bash
+cp .env.example .env
+```
+
+Important model envs:
+
+```env
+AI_API_KEY=
+AI_BASE_URL=https://api.groq.com/openai/v1
+AI_MODEL=llama-3.3-70b-versatile
+
+GROQ_API_KEY=
+GROQ_MODEL=qwen/qwen3-coder
+
+OLLAMA_BASE_URL=http://localhost:11434
+LOCAL_CHAT_MODEL=qwen2.5-coder:7b
+LOCAL_EMBED_MODEL=nomic-embed-text
+AGENT_PROVIDER=auto
+```
+
+How routing works:
+
+- local app + reachable Ollama: prefers Ollama
+- hosted app on Vercel: cannot use your local Ollama
+- hosted app needs Groq env configured to answer model requests
+
+## Run locally
+
+```bash
+npm install
 npm run dev
 ```
 
-## Check
+Open:
 
-```bash
-npm run arc:check
+```text
+http://localhost:3000
 ```
 
-## Refresh docs
+## Verification commands
+
+```bash
+npm run typecheck
+npm run arc:check
+npm run build
+```
+
+## Core modes
+
+### 1. Paper mode
+
+- Default mode
+- Creates simulated fills only
+- Updates simulated PnL and feed
+- Never creates a tx hash
+
+Use this when you want the dashboard to feel active and demo-ready without touching chain state.
+
+### 2. Testnet-intent mode
+
+- Creates a local intent record
+- Persists that record to `data/sim-state.json`
+- Shows progression in feed and recent trades
+- Still does not create an on-chain tx
+
+Use this when you want a stronger demo of workflow progression without actually writing to chain.
+
+### 3. Testnet-contract mode
+
+- Prepares a local intent
+- Prompts browser wallet confirmation
+- Writes to `ArcTradeIntentLedger` if configured correctly
+- Persists the returned tx hash locally
+
+This is the only mode that can create a visible Arc Testnet transaction hash.
+
+## Why you may not see a tx hash
+
+If the UI is running but no tx appears, check these in order:
+
+1. Are you still using `paper mode`?
+2. Did you switch to `testnet-contract mode`?
+3. Did you tick the confirmation checkbox?
+4. Is wallet actually connected to Arc Testnet?
+5. Did you set `NEXT_PUBLIC_TRADE_INTENT_LEDGER_ADDRESS`?
+6. Did you disable the safety gates below?
+7. Did the wallet confirmation popup appear and did you confirm it?
+
+Required env changes for contract mode:
+
+```env
+PAPER_TRADING_ONLY=false
+REAL_TRADING_DISABLED=false
+NEXT_PUBLIC_ENABLE_TESTNET_CONTRACT_MODE=true
+NEXT_PUBLIC_TRADE_INTENT_LEDGER_ADDRESS=0x...
+```
+
+If any of those are missing, you should expect:
+
+- no tx hash
+- no on-chain write
+- local simulation only
+
+## Arc Testnet config
+
+- Network: `Arc Testnet`
+- Chain ID: `5042002`
+- RPC: `https://rpc.testnet.arc.network`
+- Explorer: `https://testnet.arcscan.app`
+- ERC-20 USDC address: `0x3600000000000000000000000000000000000000`
+
+## Decimals rule
+
+This is the most important data rule in the repo:
+
+- native USDC gas and `msg.value` use `18 decimals`
+- ERC-20 USDC `balance / transfer / approve / allowance` use `6 decimals`
+
+Never mix them.
+
+Examples:
+
+- native 1 USDC gas unit => `1e18`
+- ERC-20 1 USDC => `1e6`
+
+## Local persistence
+
+The tool stores:
+
+- simulation state in `data/sim-state.json`
+- wallet address in browser `localStorage`
+- selected market in browser `localStorage`
+
+This means:
+
+- recent trades survive app restart
+- testnet intent records remain visible locally
+- local dashboard state feels more like a persistent terminal
+
+## How to use the agent
+
+The `Agent Console` answers questions such as:
+
+- Explain USDC decimals
+- Explain current signal
+- Why was this trade rejected?
+- Check Arc config
+- Review this simulated trade
+
+Local behavior:
+
+- if Ollama is running and reachable, the local app can answer through Ollama
+- if Ollama fails and Groq is configured, it can fallback to Groq
+
+Hosted behavior:
+
+- Vercel cannot call your `localhost:11434`
+- to make the online app answer, you must set Groq env vars in Vercel
+
+## Recommended local demo flow
+
+For a smooth demo:
+
+1. Start Ollama
+2. Run `npm run dev`
+3. Open `http://localhost:3000`
+4. Let the dashboard run for 10-20 seconds so feed/chart/pacing become lively
+5. Open `Agent Console` and ask an explanation question
+6. Connect wallet
+7. Try `testnet-intent mode` first
+8. If you have a deployed Arc Testnet ledger contract, switch to `testnet-contract mode`
+
+## Recommended contract-mode test flow
+
+1. Deploy `contracts/ArcTradeIntentLedger.sol` to Arc Testnet
+2. Put the deployed address in:
+
+```env
+NEXT_PUBLIC_TRADE_INTENT_LEDGER_ADDRESS=0x...
+```
+
+3. Set:
+
+```env
+PAPER_TRADING_ONLY=false
+REAL_TRADING_DISABLED=false
+NEXT_PUBLIC_ENABLE_TESTNET_CONTRACT_MODE=true
+```
+
+4. Restart local dev server
+5. Connect wallet
+6. Switch wallet to Arc Testnet
+7. Either use the env-provided ledger address or deploy one directly from the new `Contract Panel`
+8. Choose `testnet-contract mode`
+9. Tick the confirmation checkbox
+10. Submit the mode check
+11. Confirm the wallet transaction
+
+Expected result:
+
+- local intent is prepared
+- ledger exists on Arc Testnet
+- wallet popup opens
+- tx hash is returned
+- recent trades and KPI panel can show the tx hash
+
+## Deploying to Vercel
+
+Important:
+
+- Vercel deployment cannot reach your local Ollama instance
+- if you want hosted agent responses, configure Groq on Vercel
+
+Set these Vercel envs:
+
+```env
+AI_API_KEY=...
+AI_BASE_URL=https://api.groq.com/openai/v1
+AI_MODEL=llama-3.3-70b-versatile
+AGENT_PROVIDER=auto
+```
+
+Optional contract-mode envs for hosted demo:
+
+```env
+PAPER_TRADING_ONLY=false
+REAL_TRADING_DISABLED=false
+NEXT_PUBLIC_ENABLE_TESTNET_CONTRACT_MODE=true
+NEXT_PUBLIC_TRADE_INTENT_LEDGER_ADDRESS=0x...
+```
+
+## Scripts
+
+```bash
+npm run dev
+npm run build
+npm run start
+npm run typecheck
+npm run arc:check
+npm run arc:refresh-docs
+npm run arc:seed
+npm run arc:embed-docs
+```
+
+## Troubleshooting
+
+### The dashboard runs but I see no tx
+
+Most likely you are still in a safe mode.
+
+Check:
+
+- `paper mode` does not create tx
+- `testnet-intent mode` does not create tx
+- only `testnet-contract mode` can create tx
+
+### The online site says Ollama is unavailable
+
+That is expected.
+
+Vercel cannot access your local Ollama.
+
+Use one of these:
+
+- run locally with `npm run dev`
+- configure Groq env on Vercel
+
+### Wallet shows connected but data looks stale
+
+Use `Clear Local State` in the wallet panel and reconnect.
+
+### Agent answers incorrectly about decimals
+
+Use local docs refresh and ask again:
 
 ```bash
 npm run arc:refresh-docs
 ```
 
-## Embed docs
+## Safety
 
-```bash
-npm run arc:embed-docs
-```
-
-## Modes
-
-- `paper mode`: executes simulated fills locally and updates simulated PnL only
-- `testnet-intent mode`: records trade intents locally and can optionally mirror a confirmed wallet action
-- `testnet-contract mode`: gated by `NEXT_PUBLIC_ENABLE_TESTNET_CONTRACT_MODE=true` and always requires explicit browser wallet confirmation
-
-To enable browser-wallet contract logging on Arc Testnet:
-
-- set `PAPER_TRADING_ONLY=false`
-- set `REAL_TRADING_DISABLED=false`
-- set `NEXT_PUBLIC_ENABLE_TESTNET_CONTRACT_MODE=true`
-- deploy or configure `NEXT_PUBLIC_TRADE_INTENT_LEDGER_ADDRESS`
-
-The dashboard prepares the intent locally, asks the browser wallet to confirm, then persists the returned transaction hash locally.
-
-## Local persistence
-
-- Simulation state persists to `data/sim-state.json`
-- Wallet address and selected market persist in browser `localStorage`
-- Recent intents and fills survive app restarts on the same machine
-
-## Safety model
-
-- No automatic transactions
-- Browser wallet confirmation required for any testnet transaction
 - Testnet only
-- Simulated PnL only
-- No OpenAI API required
-
-## Arc decimals
-
-- Native USDC gas and `msg.value`: 18 decimals
-- ERC-20 USDC interface: 6 decimals
-
-Never mix these values directly.
+- Browser wallet confirmation required
+- No private key flow
+- No mainnet
+- No real-profit claim
+- Simulation-first by default
