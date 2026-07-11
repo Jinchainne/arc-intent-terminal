@@ -25,14 +25,14 @@ function buildAutoIntentReason(reason: string) {
 
 function buildDecision(signal: NonNullable<SimulationState["lastSignal"]>, riskApproved: boolean) {
   const nodes = [
-    { id: "tick", label: "Tick", x: 18, y: 108, status: "success" },
-    { id: "scan", label: "Scan", x: 114, y: 108, status: "success" },
-    { id: "classify", label: "Classify", x: 234, y: 108, status: "success" },
-    { id: "conf", label: `${signal.confidence.toFixed(1)}%`, x: 364, y: 28, status: "active" },
-    { id: "misprice", label: signal.strategy, x: 392, y: 108, status: "active" },
-    { id: "validate", label: "Validate", x: 544, y: 74, status: riskApproved ? "success" : "warning" },
-    { id: "hold", label: signal.action === "HOLD" ? "Hold" : "Fill", x: 544, y: 146, status: riskApproved ? "success" : "warning" },
-    { id: "settle", label: riskApproved ? "PnL" : "Reject", x: 666, y: 108, status: riskApproved ? "success" : "warning" }
+    { id: "tick", label: "Tick", x: 22, y: 112, status: "success" },
+    { id: "scan", label: "Scan", x: 146, y: 112, status: "success" },
+    { id: "classify", label: "Classify", x: 282, y: 112, status: "success" },
+    { id: "conf", label: `${signal.confidence.toFixed(1)}%`, x: 448, y: 24, status: "active" },
+    { id: "misprice", label: signal.strategy, x: 476, y: 112, status: "active" },
+    { id: "validate", label: "Validate", x: 664, y: 68, status: riskApproved ? "success" : "warning" },
+    { id: "hold", label: signal.action === "HOLD" ? "Hold" : "Fill", x: 664, y: 156, status: riskApproved ? "success" : "warning" },
+    { id: "settle", label: riskApproved ? "PnL" : "Reject", x: 820, y: 112, status: riskApproved ? "success" : "warning" }
   ] as SimulationState["decision"]["nodes"];
 
   const edges = [

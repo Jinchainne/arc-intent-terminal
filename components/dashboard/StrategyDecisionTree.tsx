@@ -15,18 +15,20 @@ export function StrategyDecisionTree({ state, beat = 0 }: { state: SimulationSta
         <p className="text-terminal-accent">Edge Conf {decision?.edgeConfidence.toFixed(1) ?? "--"}%</p>
       </div>
       <div className="mt-4 overflow-x-auto">
-        <svg viewBox="0 0 820 220" className="min-w-[800px]">
+        <svg viewBox="0 0 960 244" className="min-w-[920px]">
           {decision?.edges.map((edge) => {
             const from = decision.nodes.find((node) => node.id === edge.from);
             const to = decision.nodes.find((node) => node.id === edge.to);
             if (!from || !to) {
               return null;
             }
-            const startX = from.x + 46;
-            const startY = from.y + 18;
+            const startX = from.x + 54;
+            const startY = from.y + 20;
             const endX = to.x;
-            const endY = to.y + 18;
+            const endY = to.y + 20;
             const midX = (startX + endX) / 2;
+            const label = edge.label ? truncateLabel(edge.label, 14) : null;
+            const labelY = getEdgeLabelY(edge.from, edge.to, startY, endY);
             return (
               <g key={`${edge.from}-${edge.to}`}>
                 <path
@@ -36,9 +38,9 @@ export function StrategyDecisionTree({ state, beat = 0 }: { state: SimulationSta
                   strokeWidth={edge.active ? 2.4 : 1.2}
                   strokeDasharray={edge.active ? `${8 + (beat % 8)} 6` : "4 3"}
                 />
-                {edge.label ? (
-                  <text x={midX} y={(startY + endY) / 2 - 6} textAnchor="middle" fontSize="10" fill="#7a725d">
-                    {edge.label}
+                {label ? (
+                  <text x={midX} y={labelY} textAnchor="middle" fontSize="10" fill="#7a725d">
+                    {label}
                   </text>
                 ) : null}
               </g>
@@ -58,15 +60,22 @@ export function StrategyDecisionTree({ state, beat = 0 }: { state: SimulationSta
                 <rect
                   x={node.x}
                   y={node.y}
-                  width="92"
-                  height="36"
-                  rx="3"
+                  width="108"
+                  height="40"
+                  rx="4"
                   fill={tone.fill}
                   stroke={tone.stroke}
                   style={node.status === "active" ? { transform: `translateY(${Math.sin(beat / 2) * -2}px)` } : undefined}
                 />
-                <text x={node.x + 46} y={node.y + 22} textAnchor="middle" fontSize="11" fill={tone.text}>
-                  {node.label}
+                <text
+                  x={node.x + 54}
+                  y={node.y + 24}
+                  textAnchor="middle"
+                  dominantBaseline="middle"
+                  fontSize="11"
+                  fill={tone.text}
+                >
+                  {truncateLabel(node.label, 16)}
                 </text>
               </g>
             );
@@ -75,4 +84,26 @@ export function StrategyDecisionTree({ state, beat = 0 }: { state: SimulationSta
       </div>
     </Card>
   );
+}
+
+function truncateLabel(value: string, maxChars: number) {
+  if (value.length <= maxChars) {
+    return value;
+  }
+
+  return `${value.slice(0, Math.max(0, maxChars - 1))}…`;
+}
+
+function getEdgeLabelY(from: string, to: string, startY: number, endY: number) {
+  if (from === "classify" && to === "misprice") {
+    return startY - 10;
+  }
+  if (from === "misprice" && to === "hold") {
+    return endY - 12;
+  }
+  if (from === "conf" && to === "validate") {
+    return startY + 6;
+  }
+
+  return (startY + endY) / 2 - 10;
 }
