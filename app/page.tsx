@@ -310,6 +310,26 @@ export default function Page() {
               <MonteCarloPanel state={liveState} />
               <RecentTrades state={liveState} />
             </div>
+            <AutoBotPanel
+              defaultLedgerAddress={ledgerAddress}
+              walletConnected={walletConnected}
+              onRefresh={() => refreshDashboard()}
+            />
+            <TradeControls
+              onRefresh={() => refreshDashboard()}
+              lastSignalMarket={liveState?.lastSignal?.market}
+              ledgerAddress={ledgerAddress}
+              signal={
+                liveState?.lastSignal
+                  ? {
+                      action: liveState.lastSignal.action,
+                      confidence: liveState.lastSignal.confidence,
+                      reason: liveState.lastSignal.reason
+                    }
+                  : null
+              }
+            />
+            <AgentConsole onProviderUpdate={setProvider} />
           </div>
 
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-1">
@@ -342,29 +362,6 @@ export default function Page() {
                 }}
               />
             </div>
-            <div className="md:col-span-2 xl:col-span-1">
-              <AutoBotPanel
-                defaultLedgerAddress={ledgerAddress}
-                walletConnected={walletConnected}
-                onRefresh={() => refreshDashboard()}
-              />
-            </div>
-            <div className="md:col-span-2 xl:col-span-1">
-              <TradeControls
-                onRefresh={() => refreshDashboard()}
-                lastSignalMarket={liveState?.lastSignal?.market}
-                ledgerAddress={ledgerAddress}
-                signal={
-                  liveState?.lastSignal
-                    ? {
-                        action: liveState.lastSignal.action,
-                        confidence: liveState.lastSignal.confidence,
-                        reason: liveState.lastSignal.reason
-                      }
-                    : null
-                }
-              />
-            </div>
             <div className="grid gap-4 md:col-span-2 md:grid-cols-2 xl:col-span-1">
               {metrics.slice(0, 4).map((metric) => (
                 <MetricCard key={metric.label} {...metric} />
@@ -376,16 +373,12 @@ export default function Page() {
             <div className="md:col-span-2 xl:col-span-1">
               <LiveFeed state={liveState} />
             </div>
-          </div>
-        </div>
-
-        <div className="grid gap-4 xl:grid-cols-[0.9fr_1.1fr]">
-          <AgentConsole onProviderUpdate={setProvider} />
-          <div className="border border-terminal-border bg-terminal-panel p-4 text-sm leading-7 text-terminal-muted">
-            <p>Arc chain target: {ARC_CHAIN_ID}</p>
-            <p>Native USDC gas uses 18 decimals. ERC-20 USDC uses 6 decimals.</p>
-            <p>All fills, PnL, and strategy outputs shown here are simulation-first and testnet-only.</p>
-            <p>On-chain activity can use browser wallet confirmation or an optional burner key in testnet-only mode.</p>
+            <div className="md:col-span-2 xl:col-span-1 border border-terminal-border bg-terminal-panel p-4 text-sm leading-7 text-terminal-muted">
+              <p>Arc chain target: {ARC_CHAIN_ID}</p>
+              <p>Native USDC gas uses 18 decimals. ERC-20 USDC uses 6 decimals.</p>
+              <p>All fills, PnL, and strategy outputs shown here are simulation-first and testnet-only.</p>
+              <p>On-chain activity can use browser wallet confirmation or an optional burner key in testnet-only mode.</p>
+            </div>
           </div>
         </div>
       </div>
