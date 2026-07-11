@@ -44,8 +44,8 @@ async function resolveRuntimeContext(addressOverride?: string) {
 
   let rpcHealthy = false;
   let chainId: number | null = null;
-  let nativeBalance = "0.00";
-  let erc20Balance = "0.00";
+  let viewerNativeBalance = "0.00";
+  let viewerErc20Balance = "0.00";
 
   try {
     const health = await getRpcHealth();
@@ -57,26 +57,27 @@ async function resolveRuntimeContext(addressOverride?: string) {
   }
 
   try {
-    if (effectiveAddress !== "0x0000000000000000000000000000000000000000") {
-      const balances = await getArcBalances(effectiveAddress as `0x${string}`);
-      nativeBalance = formatUnits(balances.nativeBalance, 18);
-      erc20Balance = formatUnits(balances.erc20Balance, 6);
+    if (requestedAddress !== "0x0000000000000000000000000000000000000000") {
+      const balances = await getArcBalances(requestedAddress as `0x${string}`);
+      viewerNativeBalance = formatUnits(balances.nativeBalance, 18);
+      viewerErc20Balance = formatUnits(balances.erc20Balance, 6);
     }
   } catch {
-    nativeBalance = "0.00";
-    erc20Balance = "0.00";
+    viewerNativeBalance = "0.00";
+    viewerErc20Balance = "0.00";
   }
 
   return {
     rpcHealthy,
     chainId: chainId ?? ARC_CHAIN_ID,
+    requestedAddress,
     walletConnected:
       autoActive && tradeStore.autoBot.mode === "burner-key"
         ? Boolean(burnerAddress)
-        : effectiveAddress !== "0x0000000000000000000000000000000000000000",
+        : requestedAddress !== "0x0000000000000000000000000000000000000000",
     effectiveAddress,
-    nativeBalance,
-    erc20Balance,
+    viewerNativeBalance,
+    viewerErc20Balance,
     autoActive
   };
 }
@@ -133,9 +134,9 @@ async function executeRunnerCycle(input: { source: AgentTriggerSource; address?:
 
   if (!shouldAdvance) {
     return buildSimulationStateSnapshot({
-      walletAddress: runtime.effectiveAddress,
-      nativeBalance: runtime.nativeBalance,
-      erc20Balance: runtime.erc20Balance,
+      walletAddress: runtime.requestedAddress,
+      nativeBalance: runtime.viewerNativeBalance,
+      erc20Balance: runtime.viewerErc20Balance,
       rpcHealthy: runtime.rpcHealthy,
       chainId: runtime.chainId,
       lastTxHash: null
@@ -158,8 +159,8 @@ async function executeRunnerCycle(input: { source: AgentTriggerSource; address?:
       walletConnected: runtime.walletConnected,
       mode: runtime.autoActive ? "testnet-contract" : "paper",
       address: runtime.effectiveAddress,
-      nativeBalance: runtime.nativeBalance,
-      erc20Balance: runtime.erc20Balance,
+      nativeBalance: runtime.viewerNativeBalance,
+      erc20Balance: runtime.viewerErc20Balance,
       lastTxHash: null,
       source: input.source
     });
@@ -175,9 +176,9 @@ async function executeRunnerCycle(input: { source: AgentTriggerSource; address?:
     });
     await persistTradeStore();
     return buildSimulationStateSnapshot({
-      walletAddress: runtime.effectiveAddress,
-      nativeBalance: runtime.nativeBalance,
-      erc20Balance: runtime.erc20Balance,
+      walletAddress: runtime.requestedAddress,
+      nativeBalance: runtime.viewerNativeBalance,
+      erc20Balance: runtime.viewerErc20Balance,
       rpcHealthy: runtime.rpcHealthy,
       chainId: runtime.chainId,
       lastTxHash: state.stats.lastTxHash

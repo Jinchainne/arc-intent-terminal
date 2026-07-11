@@ -239,7 +239,9 @@ export default function Page() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-xs uppercase tracking-[0.24em] text-terminal-muted">
-                  {formatAddress(liveState?.stats.walletAddress ?? walletAddress)}
+                  {walletConnected
+                    ? formatAddress(liveState?.stats.walletAddress ?? walletAddress)
+                    : "Not Connected"}
                 </p>
                 <p className="mt-1 text-[10px] uppercase tracking-[0.2em] text-terminal-muted">Arc / Polygon / On-chain</p>
               </div>
