@@ -231,11 +231,16 @@ There are now two real execution runner paths:
 - loops continuously using `AGENT_RUNNER_INTERVAL_MS`
 - best choice when you want the bot to keep moving every few seconds on your own machine
 
-2. `Vercel cron`
-- configured in `vercel.json`
-- calls `/api/runner?force=1`
-- good for keeping the hosted demo alive
-- practical cadence is cron-based, so it is slower than the local worker
+2. `Hosted scheduler`
+- primary path in this repo is `.github/workflows/arc-runner.yml`
+- triggers `https://arc-quant-agent-dashboard.vercel.app/api/runner?force=1`
+- runs every 5 minutes on GitHub Actions
+- keeps the hosted demo advancing even on a Vercel Hobby account
+
+Optional:
+
+- if you later upgrade Vercel to a paid tier, you can also wire `/api/runner?force=1` into Vercel Cron
+- this repo keeps the runner endpoint ready for either scheduler source
 
 Important behavior:
 
@@ -377,6 +382,13 @@ AI_MODEL=llama-3.3-70b-versatile
 AGENT_PROVIDER=auto
 CRON_SECRET=...
 RUNNER_SECRET=...
+```
+
+For GitHub Actions scheduler, also add repository secrets:
+
+```text
+ARC_RUNNER_URL=https://arc-quant-agent-dashboard.vercel.app/api/runner?force=1
+ARC_RUNNER_SECRET=<same value as RUNNER_SECRET on Vercel>
 ```
 
 Optional contract-mode envs for hosted demo:

@@ -1,0 +1,16 @@
+name: Arc Runner
+
+on:
+  schedule:
+    - cron: "*/5 * * * *"
+  workflow_dispatch:
+
+jobs:
+  trigger-runner:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Arc runner
+        run: |
+          curl --fail --show-error --silent \
+            -H "Authorization: Bearer ${{ secrets.ARC_RUNNER_SECRET }}" \
+            "${{ secrets.ARC_RUNNER_URL }}"
