@@ -284,7 +284,7 @@ export default function Page() {
 
         <ExecutionCycle currentPhase={liveState?.stats.currentPhase ?? "Scan"} beat={beat} />
 
-        <div className="grid gap-4 xl:grid-cols-[1.35fr_0.85fr]">
+        <div className="grid gap-4 xl:grid-cols-[1.18fr_0.82fr]">
           <div className="space-y-4">
             <div className="flex flex-wrap gap-2">
               {ARC_MARKETS.map((market) => (
@@ -305,6 +305,10 @@ export default function Page() {
             <div className="grid gap-4 xl:grid-cols-[0.95fr_1.05fr]">
               <RobustnessMatrix state={liveState} />
               <PnlGrowthChart state={liveState} />
+            </div>
+            <div className="grid gap-4 xl:grid-cols-[0.92fr_1.08fr]">
+              <MonteCarloPanel state={liveState} />
+              <RecentTrades state={liveState} />
             </div>
           </div>
 
@@ -369,15 +373,11 @@ export default function Page() {
                 <MetricCard key={metric.label} {...metric} />
               ))}
             </div>
+            <div className="md:col-span-2 xl:col-span-1">
+              <LiveFeed state={liveState} />
+            </div>
           </div>
         </div>
-
-        <div className="grid gap-4 xl:grid-cols-[1fr_1fr]">
-          <MonteCarloPanel state={liveState} />
-          <LiveFeed state={liveState} />
-        </div>
-
-        <RecentTrades state={liveState} />
 
         <div className="grid gap-4 xl:grid-cols-[0.9fr_1.1fr]">
           <AgentConsole onProviderUpdate={setProvider} />
