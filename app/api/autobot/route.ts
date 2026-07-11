@@ -38,6 +38,7 @@ export async function POST(request: Request) {
     ledgerAddress?: string;
     notionalUsdc?: string;
     cooldownMs?: number;
+    objective?: string;
     intentId?: string;
     txHash?: string;
   };
@@ -71,9 +72,13 @@ export async function POST(request: Request) {
     tradeStore.trades = tradeStore.trades.filter((trade) => trade.status === "intent-logged");
     tradeStore.autoBot.totalPrepared = 0;
     tradeStore.autoBot.totalSubmitted = 0;
+    tradeStore.autoBot.pendingCount = 0;
     tradeStore.autoBot.lastRunAt = null;
     tradeStore.autoBot.lastError = null;
     tradeStore.autoBot.lastMessage = "Strategy state reset. Loss streak and pending intents cleared.";
+    tradeStore.autoBot.lastDecision = "Planner reset completed.";
+    tradeStore.autoBot.nextAction = "Arm the bot and wait for the next approved cycle.";
+    tradeStore.autoBot.blockedReason = "";
     tradeStore.risk = {
       approved: false,
       score: 72,
@@ -91,6 +96,7 @@ export async function POST(request: Request) {
     ledgerAddress: body.ledgerAddress ?? tradeStore.autoBot.ledgerAddress,
     notionalUsdc: body.notionalUsdc ?? tradeStore.autoBot.notionalUsdc,
     cooldownMs: body.cooldownMs ?? tradeStore.autoBot.cooldownMs,
+    objective: body.objective ?? tradeStore.autoBot.objective,
     lastMessage:
       body.enabled ?? tradeStore.autoBot.enabled
         ? "Auto bot armed. Waiting for the next approved cycle."

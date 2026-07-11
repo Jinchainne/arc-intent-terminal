@@ -14,9 +14,13 @@ type AutoBotConfig = {
   ledgerAddress: string;
   notionalUsdc: string;
   cooldownMs: number;
+  objective: string;
   lastRunAt: number | null;
   lastError: string | null;
   lastMessage: string;
+  lastDecision: string;
+  nextAction: string;
+  blockedReason: string;
   totalPrepared: number;
   totalSubmitted: number;
   signerAddress: string;
@@ -85,7 +89,8 @@ export function AutoBotPanel({ defaultLedgerAddress, walletConnected, onRefresh 
           mode: config.mode,
           ledgerAddress: config.ledgerAddress,
           notionalUsdc: config.notionalUsdc,
-          cooldownMs: config.cooldownMs
+          cooldownMs: config.cooldownMs,
+          objective: config.objective
         })
       });
       const payload = (await response.json()) as { ok: boolean; autoBot?: AutoBotConfig };
@@ -216,6 +221,19 @@ export function AutoBotPanel({ defaultLedgerAddress, walletConnected, onRefresh 
             placeholder="0x..."
           />
         </label>
+        <label className="space-y-2 text-xs uppercase tracking-[0.18em] text-terminal-muted md:col-span-2">
+          <span>Objective</span>
+          <Input
+            value={config.objective}
+            onChange={(event) =>
+              setConfig({
+                ...config,
+                objective: event.target.value
+              })
+            }
+            placeholder="Tell the agent what outcome to optimize for"
+          />
+        </label>
       </div>
       <div className="mt-4 grid gap-2 text-sm">
         <Row label="Status" value={config.enabled ? "Armed" : "Paused"} />
@@ -234,6 +252,11 @@ export function AutoBotPanel({ defaultLedgerAddress, walletConnected, onRefresh 
                 : "Connect wallet to confirm"
           }
         />
+      </div>
+      <div className="mt-3 grid gap-2 text-[11px] text-terminal-muted md:grid-cols-3">
+        <InfoBox label="Planner" value={config.lastDecision} />
+        <InfoBox label="Next Action" value={config.nextAction} />
+        <InfoBox label="Blocked By" value={config.blockedReason || "No active blocker"} />
       </div>
       <div className="mt-3 flex flex-wrap gap-2">
         <Button onClick={() => save(!config.enabled)} disabled={pending}>
@@ -277,6 +300,15 @@ function Row({ label, value }: { label: string; value: string }) {
     <div className="flex items-center justify-between gap-3 border border-terminal-border px-3 py-2">
       <span className="text-terminal-muted">{label}</span>
       <span className="text-terminal-text">{value}</span>
+    </div>
+  );
+}
+
+function InfoBox({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="border border-terminal-border bg-terminal-panelAlt px-3 py-2">
+      <div className="text-[10px] uppercase tracking-[0.18em] text-terminal-muted">{label}</div>
+      <div className="mt-1 text-terminal-text">{value}</div>
     </div>
   );
 }

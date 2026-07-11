@@ -44,11 +44,16 @@ export const tradeStore: {
     ledgerAddress: "",
     notionalUsdc: "250",
     cooldownMs: 12000,
+    objective: "Keep Arc testnet execution healthy and submit only high-quality intents.",
     lastRunAt: null,
     lastError: null,
     lastMessage: "Auto bot idle. Configure a ledger and choose a testnet execution mode.",
+    lastDecision: "Planner not started yet.",
+    nextAction: "Configure a ledger, choose a mode, and arm the bot.",
+    blockedReason: "",
     totalPrepared: 0,
     totalSubmitted: 0,
-    signerAddress: ""
+    signerAddress: "",
+    pendingCount: 0
   }
 };

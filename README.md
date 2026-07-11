@@ -1,6 +1,6 @@
 # Arc Quant Agent Dashboard
 
-Arc Quant Agent Dashboard is a local-first Arc Testnet builder tool: a realtime terminal-style dashboard for simulation, wallet checks, model-assisted reasoning, and optional user-confirmed testnet trade-intent logging.
+Arc Quant Agent Dashboard is a local-first Arc Testnet builder agent: a realtime terminal-style dashboard with an execution planner, persistent memory, browser-wallet mode, burner mode, and optional autonomous testnet intent submission.
 
 This repo is designed for builders, demos, hackathons, and local prototyping. It is not a production trading bot.
 
@@ -13,6 +13,7 @@ This repo is designed for builders, demos, hackathons, and local prototyping. It
 - Supports optional browser-wallet confirmation for testnet contract intent logging
 - Supports auto bot execution on Arc testnet with either manual wallet confirmation or burner-key signing
 - Persists local simulation state to disk
+- Maintains an agent objective, planner output, blocker reason, and next action for each cycle
 
 ## What this tool does not do
 
@@ -23,9 +24,9 @@ This repo is designed for builders, demos, hackathons, and local prototyping. It
 - No promise of real profit
 - No real-money automation
 
-## Builder mental model
+## Builder agent model
 
-There are 3 separate execution layers in this project:
+This repo now behaves as a small execution agent with four layers:
 
 1. `Simulation layer`
 - Always available
@@ -41,6 +42,12 @@ There are 3 separate execution layers in this project:
 - Requires browser wallet confirmation
 - Requires Arc Testnet contract address
 - Can produce a real Arc Testnet transaction hash
+
+4. `Planner layer`
+- Tracks the current objective
+- Explains the latest decision
+- Emits the next recommended action
+- Surfaces blockers such as missing signer, missing ledger, pending intent, or risk rejection
 
 If you are running the tool locally and do not see a tx hash, the most common reason is simple:
 
@@ -83,7 +90,7 @@ Invoke-RestMethod http://localhost:11434/api/tags
 Copy:
 
 ```bash
-cp .env.example .env
+cp .env.example .env.local
 ```
 
 Important model envs:
@@ -180,6 +187,8 @@ NEXT_PUBLIC_TRADE_INTENT_LEDGER_ADDRESS=0x...
 AUTO_BURNER_PRIVATE_KEY=0x...
 ```
 
+After editing envs, restart the local dev server so Next.js reloads `.env.local`.
+
 If any of those are missing, you should expect:
 
 - no tx hash
@@ -199,6 +208,21 @@ The dashboard now supports two bot execution styles on Arc Testnet:
 - auto bot prepares and submits testnet intents directly from the server
 - requires `AUTO_BURNER_PRIVATE_KEY`
 - use only a disposable testnet wallet
+
+## Agent controls
+
+The `Auto Bot` panel is the core builder-agent interface:
+
+- `Objective`
+  Agent goal for the next cycles
+- `Planner`
+  What the agent decided this cycle
+- `Next Action`
+  What the agent wants to do next
+- `Blocked By`
+  Current execution blocker, if any
+- `Reset Strategy State`
+  Clears loss streak and pending intent state so the planner can attempt fresh execution
 
 ## Arc Testnet config
 

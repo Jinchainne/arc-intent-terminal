@@ -1,4 +1,5 @@
 import { EXECUTION_PHASES, SIM_STARTING_USDC, SIM_TICK_MS } from "@/lib/arc/constants";
+import { deriveAutoBotPlanner } from "@/lib/agent/autobotPlanner";
 import { fromUsdc6, toUsdc6 } from "@/lib/arc/usdc";
 import { submitTradeIntentWithBurner } from "@/lib/arc/serverExecutor";
 import { advanceMarketState, createInitialMarketState } from "@/lib/trading/marketSimulator";
@@ -66,6 +67,9 @@ export async function runExecutionCycle(input: {
 }) {
   const markets = advanceMarketState(tradeStore.markets ?? createInitialMarketState());
   tradeStore.markets = markets;
+  if (tradeStore.autoBot.mode === "burner-key" && input.address !== "0x0000000000000000000000000000000000000000") {
+    tradeStore.autoBot.signerAddress = input.address;
+  }
 
   const selectedMarket = Object.keys(markets)[Math.floor(Math.random() * Object.keys(markets).length)] as
     | keyof typeof markets
@@ -217,6 +221,19 @@ export async function runExecutionCycle(input: {
   const globalRank = Math.max(1, 5000 - tradeStore.trades.length * 7);
   const outperformDelta = Number((finalSummary.allTimePnl * 0.91).toFixed(0));
   const inFlight = tradeStore.trades.filter((entry) => entry.status === "intent-pending").length;
+  tradeStore.autoBot.pendingCount = inFlight;
+
+  const planner = deriveAutoBotPlanner({
+    autoBot: tradeStore.autoBot,
+    risk,
+    signal,
+    latestTrade: trade,
+    signerReady: tradeStore.autoBot.mode === "burner-key" ? Boolean(tradeStore.autoBot.signerAddress) : true
+  });
+  tradeStore.autoBot.objective = planner.objective;
+  tradeStore.autoBot.lastDecision = planner.lastDecision;
+  tradeStore.autoBot.nextAction = planner.nextAction;
+  tradeStore.autoBot.blockedReason = planner.blockedReason;
 
   await persistTradeStore();
 

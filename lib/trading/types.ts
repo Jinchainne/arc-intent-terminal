@@ -114,10 +114,15 @@ export type AutoBotState = {
   ledgerAddress: string;
   notionalUsdc: string;
   cooldownMs: number;
+  objective: string;
   lastRunAt: number | null;
   lastError: string | null;
   lastMessage: string;
+  lastDecision: string;
+  nextAction: string;
+  blockedReason: string;
   totalPrepared: number;
   totalSubmitted: number;
   signerAddress: string;
+  pendingCount: number;
 };
