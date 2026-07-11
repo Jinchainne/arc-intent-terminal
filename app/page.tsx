@@ -284,7 +284,7 @@ export default function Page() {
 
         <ExecutionCycle currentPhase={liveState?.stats.currentPhase ?? "Scan"} beat={beat} />
 
-        <div className="grid gap-4 xl:grid-cols-[1.4fr_0.8fr]">
+        <div className="grid gap-4 xl:grid-cols-[1.35fr_0.85fr]">
           <div className="space-y-4">
             <div className="flex flex-wrap gap-2">
               {ARC_MARKETS.map((market) => (
@@ -308,7 +308,7 @@ export default function Page() {
             </div>
           </div>
 
-          <div className="space-y-4">
+          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-1">
             <WalletPanel
               address={walletAddress}
               nativeBalance={liveState?.stats.nativeBalance ?? "0.00"}
@@ -320,40 +320,48 @@ export default function Page() {
               onReset={resetLocalState}
             />
             <RiskPanel state={liveState} />
-            <ModelStatus provider={provider} />
-            <ContractPanel
-              walletConnected={walletConnected}
-              chainId={chainId}
-              ledgerAddress={ledgerAddress}
-              deploymentTxHash={deploymentTxHash}
-              onDeploySubmitted={(txHash) => {
-                setDeploymentTxHash(txHash);
-              }}
-              onLedgerDeployed={({ ledgerAddress: nextLedgerAddress, txHash }) => {
-                setLedgerAddress(nextLedgerAddress);
-                setDeploymentTxHash(txHash);
-              }}
-            />
-            <AutoBotPanel
-              defaultLedgerAddress={ledgerAddress}
-              walletConnected={walletConnected}
-              onRefresh={() => refreshDashboard()}
-            />
-            <TradeControls
-              onRefresh={() => refreshDashboard()}
-              lastSignalMarket={liveState?.lastSignal?.market}
-              ledgerAddress={ledgerAddress}
-              signal={
-                liveState?.lastSignal
-                  ? {
-                      action: liveState.lastSignal.action,
-                      confidence: liveState.lastSignal.confidence,
-                      reason: liveState.lastSignal.reason
-                    }
-                  : null
-              }
-            />
-            <div className="grid gap-4 md:grid-cols-2">
+            <div className="md:col-span-2 xl:col-span-1">
+              <ModelStatus provider={provider} />
+            </div>
+            <div className="md:col-span-2 xl:col-span-1">
+              <ContractPanel
+                walletConnected={walletConnected}
+                chainId={chainId}
+                ledgerAddress={ledgerAddress}
+                deploymentTxHash={deploymentTxHash}
+                onDeploySubmitted={(txHash) => {
+                  setDeploymentTxHash(txHash);
+                }}
+                onLedgerDeployed={({ ledgerAddress: nextLedgerAddress, txHash }) => {
+                  setLedgerAddress(nextLedgerAddress);
+                  setDeploymentTxHash(txHash);
+                }}
+              />
+            </div>
+            <div className="md:col-span-2 xl:col-span-1">
+              <AutoBotPanel
+                defaultLedgerAddress={ledgerAddress}
+                walletConnected={walletConnected}
+                onRefresh={() => refreshDashboard()}
+              />
+            </div>
+            <div className="md:col-span-2 xl:col-span-1">
+              <TradeControls
+                onRefresh={() => refreshDashboard()}
+                lastSignalMarket={liveState?.lastSignal?.market}
+                ledgerAddress={ledgerAddress}
+                signal={
+                  liveState?.lastSignal
+                    ? {
+                        action: liveState.lastSignal.action,
+                        confidence: liveState.lastSignal.confidence,
+                        reason: liveState.lastSignal.reason
+                      }
+                    : null
+                }
+              />
+            </div>
+            <div className="grid gap-4 md:col-span-2 md:grid-cols-2 xl:col-span-1">
               {metrics.slice(0, 4).map((metric) => (
                 <MetricCard key={metric.label} {...metric} />
               ))}
@@ -377,7 +385,7 @@ export default function Page() {
             <p>Arc chain target: {ARC_CHAIN_ID}</p>
             <p>Native USDC gas uses 18 decimals. ERC-20 USDC uses 6 decimals.</p>
             <p>All fills, PnL, and strategy outputs shown here are simulation-first and testnet-only.</p>
-            <p>On-chain activity requires explicit wallet confirmation and never uses private keys.</p>
+            <p>On-chain activity can use browser wallet confirmation or an optional burner key in testnet-only mode.</p>
           </div>
         </div>
       </div>

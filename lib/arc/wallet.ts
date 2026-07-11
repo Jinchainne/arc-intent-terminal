@@ -4,6 +4,10 @@ import { arcTradeIntentLedgerArtifact } from "@/lib/arc/intentLedgerArtifact";
 import { arcTradeIntentLedgerAbi } from "@/lib/arc/intentLedger";
 import { createPublicClient, createWalletClient, custom, http, isAddress } from "viem";
 
+function bumpBigInt(value: bigint, numerator = 12n, denominator = 10n) {
+  return (value * numerator) / denominator;
+}
+
 declare global {
   interface Window {
     ethereum?: {
@@ -101,13 +105,22 @@ export async function logTradeIntentWithBrowserWallet(input: {
     transport: custom(window.ethereum)
   });
 
+  const publicClient = createPublicClient({
+    chain: arcTestnet,
+    transport: http(ARC_RPC_URL)
+  });
+
+  const fees = await publicClient.estimateFeesPerGas();
+
   const hash = await walletClient.writeContract({
     account: account as `0x${string}`,
     chain: arcTestnet,
     address: input.ledgerAddress,
     abi: arcTradeIntentLedgerAbi,
     functionName: "createTradeIntent",
-    args: [input.market, input.side, input.notionalUsdc6, BigInt(input.confidence), input.reason]
+    args: [input.market, input.side, input.notionalUsdc6, BigInt(input.confidence), input.reason],
+    maxFeePerGas: fees.maxFeePerGas ? bumpBigInt(fees.maxFeePerGas) : undefined,
+    maxPriorityFeePerGas: fees.maxPriorityFeePerGas ? bumpBigInt(fees.maxPriorityFeePerGas) : undefined
   });
 
   return hash;
@@ -136,6 +149,7 @@ export async function deployTradeIntentLedgerWithBrowserWallet(options?: {
     chain: arcTestnet,
     transport: http(ARC_RPC_URL)
   });
+  const fees = await publicClient.estimateFeesPerGas();
 
   const gas = await publicClient.estimateGas({
     account: account as `0x${string}`,
@@ -146,7 +160,9 @@ export async function deployTradeIntentLedgerWithBrowserWallet(options?: {
     account: account as `0x${string}`,
     chain: arcTestnet,
     data: arcTradeIntentLedgerArtifact.bytecode,
-    gas
+    gas,
+    maxFeePerGas: fees.maxFeePerGas ? bumpBigInt(fees.maxFeePerGas, 14n, 10n) : undefined,
+    maxPriorityFeePerGas: fees.maxPriorityFeePerGas ? bumpBigInt(fees.maxPriorityFeePerGas, 14n, 10n) : undefined
   });
   options?.onSubmitted?.(hash);
 

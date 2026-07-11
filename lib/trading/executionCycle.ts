@@ -1,5 +1,6 @@
 import { EXECUTION_PHASES, SIM_STARTING_USDC, SIM_TICK_MS } from "@/lib/arc/constants";
-import { fromUsdc6 } from "@/lib/arc/usdc";
+import { fromUsdc6, toUsdc6 } from "@/lib/arc/usdc";
+import { submitTradeIntentWithBurner } from "@/lib/arc/serverExecutor";
 import { advanceMarketState, createInitialMarketState } from "@/lib/trading/marketSimulator";
 import { runMonteCarlo } from "@/lib/trading/monteCarlo";
 import { persistTradeStore } from "@/lib/trading/persistence";
@@ -16,6 +17,10 @@ function buildFeed(message: string, tone: "info" | "good" | "bad") {
     tone,
     timestamp: Date.now()
   };
+}
+
+function buildAutoIntentReason(reason: string) {
+  return `AUTO BOT: ${reason}`;
 }
 
 function buildDecision(signal: NonNullable<SimulationState["lastSignal"]>, riskApproved: boolean) {
@@ -67,7 +72,13 @@ export async function runExecutionCycle(input: {
     | undefined;
   const market = selectedMarket ?? "BTC/USDC-SIM";
   const prices = markets[market].map((entry) => entry.price);
-  const signal = generateStrategySignal(market, prices, SIM_STARTING_USDC + tradeStore.allTimePnl);
+  const rawSignal = generateStrategySignal(market, prices, SIM_STARTING_USDC + tradeStore.allTimePnl);
+  const signal = tradeStore.autoBot.enabled
+    ? {
+        ...rawSignal,
+        notionalUsdc6: toUsdc6(tradeStore.autoBot.notionalUsdc || "250")
+      }
+    : rawSignal;
   const summary = summarizeTrades(tradeStore.trades);
   tradeStore.allTimePnl = summary.allTimePnl;
 
@@ -109,10 +120,53 @@ export async function runExecutionCycle(input: {
       reason: signal.reason,
       mode: input.mode,
       timestamp: Date.now(),
-      status: input.mode === "paper" ? "filled" : "intent-logged",
+      status: input.mode === "paper" ? "filled" : input.lastTxHash ? "intent-logged" : "intent-pending",
       txHash: input.lastTxHash ?? undefined
     };
     tradeStore.trades = [...tradeStore.trades.slice(-199), trade];
+  }
+
+  if (trade && tradeStore.autoBot.enabled && tradeStore.autoBot.ledgerAddress) {
+    const now = Date.now();
+    const cooledDown =
+      tradeStore.autoBot.lastRunAt === null || now - tradeStore.autoBot.lastRunAt >= tradeStore.autoBot.cooldownMs;
+
+    if (cooledDown) {
+      trade.mode = "testnet-contract";
+      trade.reason = buildAutoIntentReason(trade.reason);
+      tradeStore.autoBot.lastRunAt = now;
+
+      if (tradeStore.autoBot.mode === "manual-wallet") {
+        trade.status = "intent-pending";
+        tradeStore.autoBot.totalPrepared += 1;
+        tradeStore.autoBot.lastError = null;
+        tradeStore.autoBot.lastMessage = `Prepared ${trade.market} ${trade.side} intent. Manual wallet confirmation is required.`;
+      } else {
+        try {
+          const submitted = await submitTradeIntentWithBurner({
+            ledgerAddress: tradeStore.autoBot.ledgerAddress as `0x${string}`,
+            market: trade.market,
+            side: trade.side,
+            notionalUsdc6: trade.notionalUsdc6,
+            confidence: trade.confidence,
+            reason: trade.reason
+          });
+          trade.status = "intent-logged";
+          trade.txHash = submitted.hash;
+          tradeStore.autoBot.signerAddress = submitted.signerAddress;
+          tradeStore.autoBot.totalPrepared += 1;
+          tradeStore.autoBot.totalSubmitted += 1;
+          tradeStore.autoBot.lastError = null;
+          tradeStore.autoBot.lastMessage = `Burner submitted ${trade.market} ${trade.side} on Arc testnet.`;
+        } catch (error) {
+          trade.status = "intent-pending";
+          tradeStore.autoBot.totalPrepared += 1;
+          tradeStore.autoBot.lastError =
+            error instanceof Error ? error.message : "Burner signer could not write to Arc testnet.";
+          tradeStore.autoBot.lastMessage = "Burner mode prepared an intent but could not submit it on-chain.";
+        }
+      }
+    }
   }
 
   const finalSummary = summarizeTrades(tradeStore.trades);
@@ -134,7 +188,15 @@ export async function runExecutionCycle(input: {
       risk.approved ? "good" : "bad"
     ),
     ...(trade
-      ? [buildFeed(`Fill: ${trade.status} for ${trade.market} with ${fromUsdc6(trade.notionalUsdc6)} USDC.`, "good")]
+      ? [
+          buildFeed(
+            `Fill: ${trade.status} for ${trade.market} with ${fromUsdc6(trade.notionalUsdc6)} USDC.`,
+            trade.status === "intent-pending" ? "info" : "good"
+          )
+        ]
+      : []),
+    ...(tradeStore.autoBot.lastMessage
+      ? [buildFeed(`Auto Bot: ${tradeStore.autoBot.lastMessage}`, tradeStore.autoBot.lastError ? "bad" : "info")]
       : []),
     buildFeed(
       `Settle: simulated PnL ${finalSummary.allTimePnl.toFixed(2)} USDC. Phase ${

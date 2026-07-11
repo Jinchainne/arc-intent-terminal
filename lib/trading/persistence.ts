@@ -18,6 +18,7 @@ type PersistedStore = {
   feed: typeof tradeStore.feed;
   pnlSeries: typeof tradeStore.pnlSeries;
   monteCarlo: SimulationState["monteCarlo"];
+  autoBot: typeof tradeStore.autoBot;
   lastSignal: (Omit<NonNullable<typeof tradeStore.lastSignal>, "notionalUsdc6"> & {
     notionalUsdc6: string;
   }) | null;
@@ -38,6 +39,7 @@ function serialize() {
     feed: tradeStore.feed,
     pnlSeries: tradeStore.pnlSeries,
     monteCarlo: tradeStore.monteCarlo,
+    autoBot: tradeStore.autoBot,
     lastSignal: tradeStore.lastSignal
       ? {
           ...tradeStore.lastSignal,
@@ -67,6 +69,7 @@ export async function ensureTradeStoreLoaded() {
     tradeStore.feed = payload.feed ?? [];
     tradeStore.pnlSeries = payload.pnlSeries ?? [];
     tradeStore.monteCarlo = payload.monteCarlo ?? tradeStore.monteCarlo;
+    tradeStore.autoBot = payload.autoBot ?? tradeStore.autoBot;
     tradeStore.lastSignal = payload.lastSignal
       ? {
           ...payload.lastSignal,

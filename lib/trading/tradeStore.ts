@@ -1,5 +1,12 @@
 import { createInitialMarketState } from "@/lib/trading/marketSimulator";
-import type { MarketSymbol, RiskStatus, SimulationState, StrategySignal, TradeRecord } from "@/lib/trading/types";
+import type {
+  AutoBotState,
+  MarketSymbol,
+  RiskStatus,
+  SimulationState,
+  StrategySignal,
+  TradeRecord
+} from "@/lib/trading/types";
 
 export const tradeStore: {
   markets: Record<MarketSymbol, { timestamp: number; price: number }[]>;
@@ -10,6 +17,7 @@ export const tradeStore: {
   lastSignal: StrategySignal | null;
   risk: RiskStatus;
   allTimePnl: number;
+  autoBot: AutoBotState;
 } = {
   markets: createInitialMarketState(),
   trades: [],
@@ -29,5 +37,18 @@ export const tradeStore: {
     phase: "Scan",
     flags: []
   },
-  allTimePnl: 0
+  allTimePnl: 0,
+  autoBot: {
+    enabled: false,
+    mode: "manual-wallet",
+    ledgerAddress: "",
+    notionalUsdc: "250",
+    cooldownMs: 12000,
+    lastRunAt: null,
+    lastError: null,
+    lastMessage: "Auto bot idle. Configure a ledger and choose a testnet execution mode.",
+    totalPrepared: 0,
+    totalSubmitted: 0,
+    signerAddress: ""
+  }
 };

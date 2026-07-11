@@ -11,6 +11,7 @@ export type MarketCandle = {
 export type StrategyAction = "BUY" | "SELL" | "HOLD";
 export type StrategyName = "Momentum" | "Mean Reversion" | "Volatility Breakout";
 export type ExecutionMode = "paper" | "testnet-intent" | "testnet-contract";
+export type AutoBotMode = "manual-wallet" | "burner-key";
 
 export type StrategySignal = {
   market: MarketSymbol;
@@ -105,4 +106,18 @@ export type SimulationState = {
     globalRank: number;
     outperformDelta: number;
   };
+};
+
+export type AutoBotState = {
+  enabled: boolean;
+  mode: AutoBotMode;
+  ledgerAddress: string;
+  notionalUsdc: string;
+  cooldownMs: number;
+  lastRunAt: number | null;
+  lastError: string | null;
+  lastMessage: string;
+  totalPrepared: number;
+  totalSubmitted: number;
+  signerAddress: string;
 };

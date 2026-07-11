@@ -11,6 +11,7 @@ This repo is designed for builders, demos, hackathons, and local prototyping. It
 - Connects to an injected browser wallet for Arc Testnet checks
 - Routes agent questions to local Ollama or Groq
 - Supports optional browser-wallet confirmation for testnet contract intent logging
+- Supports auto bot execution on Arc testnet with either manual wallet confirmation or burner-key signing
 - Persists local simulation state to disk
 
 ## What this tool does not do
@@ -18,7 +19,7 @@ This repo is designed for builders, demos, hackathons, and local prototyping. It
 - No mainnet trading
 - No hidden auto-trading
 - No centralized exchange execution
-- No private key execution flow
+- No mainnet private key execution flow
 - No promise of real profit
 - No real-money automation
 
@@ -176,6 +177,7 @@ PAPER_TRADING_ONLY=false
 REAL_TRADING_DISABLED=false
 NEXT_PUBLIC_ENABLE_TESTNET_CONTRACT_MODE=true
 NEXT_PUBLIC_TRADE_INTENT_LEDGER_ADDRESS=0x...
+AUTO_BURNER_PRIVATE_KEY=0x...
 ```
 
 If any of those are missing, you should expect:
@@ -183,6 +185,20 @@ If any of those are missing, you should expect:
 - no tx hash
 - no on-chain write
 - local simulation only
+
+## Auto bot modes
+
+The dashboard now supports two bot execution styles on Arc Testnet:
+
+1. `Auto + manual wallet confirm`
+- auto bot prepares testnet intents as signals are approved
+- intents appear as pending
+- you confirm the latest pending intent with your browser wallet
+
+2. `Auto + burner private key`
+- auto bot prepares and submits testnet intents directly from the server
+- requires `AUTO_BURNER_PRIVATE_KEY`
+- use only a disposable testnet wallet
 
 ## Arc Testnet config
 
@@ -364,7 +380,7 @@ npm run arc:refresh-docs
 
 - Testnet only
 - Browser wallet confirmation required
-- No private key flow
+- Optional burner-key mode is testnet-only and should use a disposable wallet
 - No mainnet
 - No real-profit claim
 - Simulation-first by default

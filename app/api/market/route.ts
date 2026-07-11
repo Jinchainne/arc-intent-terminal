@@ -1,9 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 
 import { ARC_CHAIN_ID } from "@/lib/arc/constants";
+import { getBurnerSignerAddress } from "@/lib/arc/serverExecutor";
 import { getRpcHealth } from "@/lib/arc/rpc";
 import { runExecutionCycle } from "@/lib/trading/executionCycle";
 import { ensureTradeStoreLoaded } from "@/lib/trading/persistence";
+import { tradeStore } from "@/lib/trading/tradeStore";
 import { toJsonSafe } from "@/lib/utils/jsonResponse";
 import { formatUnits } from "viem";
 import { getArcBalances } from "@/lib/arc/rpc";
@@ -41,12 +43,21 @@ export async function GET(request: NextRequest) {
       erc20Balance = "0.00";
     }
 
+    const autoActive = tradeStore.autoBot.enabled && Boolean(tradeStore.autoBot.ledgerAddress);
+    const autoMode = autoActive ? "testnet-contract" : "paper";
+    const burnerAddress = getBurnerSignerAddress();
+    const effectiveAddress =
+      autoActive && tradeStore.autoBot.mode === "burner-key" && burnerAddress ? burnerAddress : address;
+
     const state = await runExecutionCycle({
       rpcHealthy,
       chainId: chainId ?? ARC_CHAIN_ID,
-      walletConnected: address !== "0x0000000000000000000000000000000000000000",
-      mode: "paper",
-      address,
+      walletConnected:
+        autoActive && tradeStore.autoBot.mode === "burner-key"
+          ? Boolean(burnerAddress)
+          : address !== "0x0000000000000000000000000000000000000000",
+      mode: autoMode,
+      address: effectiveAddress,
       nativeBalance,
       erc20Balance,
       lastTxHash: null
