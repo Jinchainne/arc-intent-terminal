@@ -1,9 +1,45 @@
 {
   "markets": {
-    "BTC/USDC-SIM": [],
-    "ETH/USDC-SIM": [],
-    "SOL/USDC-SIM": [],
-    "ARC-GAS/USDC-SIM": []
+    "BTC/USDC-SIM": [
+      { "timestamp": 1784169180000, "price": 108240 },
+      { "timestamp": 1784169240000, "price": 107806.04 },
+      { "timestamp": 1784169300000, "price": 108889.44 },
+      { "timestamp": 1784169360000, "price": 108564.72 },
+      { "timestamp": 1784169420000, "price": 108023.52 },
+      { "timestamp": 1784169480000, "price": 109105.92 },
+      { "timestamp": 1784169540000, "price": 109430.64 },
+      { "timestamp": 1784169600000, "price": 108997.68 }
+    ],
+    "ETH/USDC-SIM": [
+      { "timestamp": 1784169180000, "price": 6040 },
+      { "timestamp": 1784169240000, "price": 6015.84 },
+      { "timestamp": 1784169300000, "price": 6076.24 },
+      { "timestamp": 1784169360000, "price": 6058.12 },
+      { "timestamp": 1784169420000, "price": 6027.92 },
+      { "timestamp": 1784169480000, "price": 6088.32 },
+      { "timestamp": 1784169540000, "price": 6106.44 },
+      { "timestamp": 1784169600000, "price": 6082.28 }
+    ],
+    "SOL/USDC-SIM": [
+      { "timestamp": 1784169180000, "price": 214 },
+      { "timestamp": 1784169240000, "price": 213.144 },
+      { "timestamp": 1784169300000, "price": 215.284 },
+      { "timestamp": 1784169360000, "price": 214.642 },
+      { "timestamp": 1784169420000, "price": 213.572 },
+      { "timestamp": 1784169480000, "price": 215.712 },
+      { "timestamp": 1784169540000, "price": 216.354 },
+      { "timestamp": 1784169600000, "price": 215.498 }
+    ],
+    "ARC-GAS/USDC-SIM": [
+      { "timestamp": 1784169180000, "price": 1 },
+      { "timestamp": 1784169240000, "price": 0.996 },
+      { "timestamp": 1784169300000, "price": 1.006 },
+      { "timestamp": 1784169360000, "price": 1.003 },
+      { "timestamp": 1784169420000, "price": 0.998 },
+      { "timestamp": 1784169480000, "price": 1.008 },
+      { "timestamp": 1784169540000, "price": 1.011 },
+      { "timestamp": 1784169600000, "price": 1.007 }
+    ]
   },
   "trades": [],
   "activityLog": [],

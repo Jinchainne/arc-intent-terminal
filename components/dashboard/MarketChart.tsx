@@ -3,6 +3,7 @@
 import { Area, ComposedChart, Line, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 
 import { Card } from "@/components/ui/Card";
+import { createFallbackPreviewMarkets } from "@/lib/trading/fallbackPreview";
 import type { MarketSymbol, SimulationState } from "@/lib/trading/types";
 import { formatCompactNumber } from "@/lib/utils/format";
 
@@ -13,10 +14,12 @@ export function MarketChart({
   market: MarketSymbol;
   state: SimulationState | null;
 }) {
-  const data = state?.markets[market]?.map((entry) => ({
+  const fallbackSeries = createFallbackPreviewMarkets()[market];
+  const series = state?.markets[market]?.length ? state.markets[market] : fallbackSeries;
+  const data = series.map((entry) => ({
     time: new Date(entry.timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
     price: Number(entry.price.toFixed(4))
-  })) ?? [];
+  }));
   const last = data.at(-1)?.price ?? 0;
   const prev = data.at(-2)?.price ?? last;
   const delta = last - prev;

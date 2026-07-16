@@ -57,6 +57,23 @@ function defaultPersistedStore(): PersistedStore {
   };
 }
 
+function normalizeMarkets(markets: PersistedStore["markets"] | undefined) {
+  const seededMarkets = createInitialMarketState();
+  if (!markets) {
+    return seededMarkets;
+  }
+
+  return Object.fromEntries(
+    Object.entries(seededMarkets).map(([market, seededSeries]) => {
+      const currentSeries = markets[market as keyof typeof markets];
+      return [
+        market,
+        Array.isArray(currentSeries) && currentSeries.length > 1 ? currentSeries : seededSeries
+      ];
+    })
+  ) as PersistedStore["markets"];
+}
+
 function hasLegacyBurnerState(payload: PersistedStore) {
   return (
     payload.autoBot?.mode !== "manual-wallet" ||
@@ -72,13 +89,14 @@ function hasLegacyBurnerState(payload: PersistedStore) {
 function sanitizePersistedStore(payload: PersistedStore): PersistedStore {
   if (hasLegacyBurnerState(payload)) {
     const clean = defaultPersistedStore();
-    clean.markets = payload.markets ?? createInitialMarketState();
+    clean.markets = normalizeMarkets(payload.markets);
     return clean;
   }
 
   return {
     ...defaultPersistedStore(),
     ...payload,
+    markets: normalizeMarkets(payload.markets),
     autoBot: {
       ...createDefaultAutoBotState(),
       ...payload.autoBot,
@@ -125,7 +143,7 @@ async function loadTradeStore(force = false) {
   try {
     const raw = await fs.readFile(storePath, "utf8");
     const payload = sanitizePersistedStore(JSON.parse(raw) as PersistedStore);
-    tradeStore.markets = payload.markets ?? createInitialMarketState();
+    tradeStore.markets = normalizeMarkets(payload.markets);
     tradeStore.trades = (payload.trades ?? []).map((trade) => ({
       ...trade,
       notionalUsdc6: BigInt(trade.notionalUsdc6)

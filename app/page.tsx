@@ -29,7 +29,7 @@ import {
   getInjectedChainId
 } from "@/lib/arc/wallet";
 import type { MarketSymbol, SimulationState } from "@/lib/trading/types";
-import { formatAddress, formatCurrency } from "@/lib/utils/format";
+import { formatAddress, formatCurrency, formatTokenBalance } from "@/lib/utils/format";
 import { formatRelativeMs, formatUtc } from "@/lib/utils/time";
 
 export default function Page() {
@@ -198,7 +198,7 @@ export default function Page() {
   const metrics = useMemo(
     () => [
       { label: "Testnet Wallet", value: formatAddress(liveState?.stats.walletAddress ?? walletAddress), hint: "Browser wallet or placeholder" },
-      { label: "USDC Wallet Balance", value: liveState?.stats.nativeBalance ?? "0.00", hint: "Displayed as one Arc wallet balance", accent: "neutral" as const },
+      { label: "USDC Wallet Balance", value: formatTokenBalance(liveState?.stats.nativeBalance ?? "0.00"), hint: "Displayed as one Arc wallet balance", accent: "neutral" as const },
       {
         label: "All-time PnL",
         value: formatCurrency(liveState?.stats.allTimePnl ?? 0),
