@@ -2,7 +2,9 @@ import { Card } from "@/components/ui/Card";
 
 export function ModelStatus({ provider }: { provider: string }) {
   const details =
-    provider === "groq"
+    provider === "standby"
+      ? "Model console is idle. For the strongest hosted demo, configure a Groq key before showing agent Q&A."
+      : provider === "groq"
       ? "Groq path is active. This works on hosted deployments when a Groq key is configured."
       : provider === "fallback"
         ? "Fallback path was used. If this is the Vercel site, local Ollama is not reachable from the cloud."

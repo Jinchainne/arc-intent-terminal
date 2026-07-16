@@ -15,3 +15,4 @@ tsconfig.tsbuildinfo
 
 .vercel
 .env*
+agent-feature-summary.txt

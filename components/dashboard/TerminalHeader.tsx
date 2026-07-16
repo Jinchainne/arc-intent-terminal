@@ -2,6 +2,7 @@ import { Activity, Cpu, Link2, Timer, Wallet } from "lucide-react";
 
 import { Badge } from "@/components/ui/Badge";
 import { Card } from "@/components/ui/Card";
+import { ARC_CHAIN_ID } from "@/lib/arc/constants";
 
 type TerminalHeaderProps = {
   walletConnected: boolean;
@@ -26,6 +27,12 @@ export function TerminalHeader({
   globalRank,
   outperformDelta
 }: TerminalHeaderProps) {
+  const chainValue = chainId
+    ? chainId === ARC_CHAIN_ID
+      ? `${chainId} · Arc Testnet`
+      : `${chainId} · switch to ${ARC_CHAIN_ID}`
+    : `Target ${ARC_CHAIN_ID}`;
+
   return (
     <Card className="relative overflow-hidden p-4">
       <div className="absolute inset-0 bg-grid bg-[size:24px_24px] opacity-25" />
@@ -43,8 +50,8 @@ export function TerminalHeader({
       </div>
       <div className="relative flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <div>
-          <p className="text-[11px] uppercase tracking-[0.35em] text-terminal-muted">Arc USDC Testnet Agent Terminal</p>
-          <h1 className="mt-2 text-2xl font-semibold tracking-[0.2em] text-terminal-text">ARC QUANT AGENT</h1>
+          <p className="text-[11px] uppercase tracking-[0.35em] text-terminal-muted">Arc Intent Terminal</p>
+          <h1 className="mt-2 text-2xl font-semibold tracking-[0.2em] text-terminal-text">ARC-INTENT-TERMINAL</h1>
           <div className="mt-3 flex flex-wrap gap-2">
             <Badge tone="negative">TESTNET</Badge>
             <Badge tone="neutral">SIMULATION</Badge>
@@ -55,8 +62,8 @@ export function TerminalHeader({
         </div>
 
         <div className="grid grid-cols-2 gap-3 text-xs md:grid-cols-3 xl:grid-cols-5">
-          <StatusItem icon={Wallet} label="Wallet" value={walletConnected ? "Injected" : "Not Connected"} />
-          <StatusItem icon={Link2} label="Chain" value={chainId ? `${chainId}` : "Unknown"} />
+          <StatusItem icon={Wallet} label="Wallet" value={walletConnected ? "Browser Wallet" : "Not Connected"} />
+          <StatusItem icon={Link2} label="Chain" value={chainValue} />
           <StatusItem icon={Activity} label="RPC" value={rpcHealthy ? "Healthy" : "Degraded"} />
           <StatusItem icon={Cpu} label="Model" value={modelProvider.toUpperCase()} />
           <StatusItem icon={Timer} label="Uptime" value={`${utcTime} | ${uptime}`} />

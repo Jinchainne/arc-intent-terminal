@@ -41,7 +41,7 @@ export default function Page() {
   const [chainId, setChainId] = useState<number | null>(null);
   const [ledgerAddress, setLedgerAddress] = useState("");
   const [deploymentTxHash, setDeploymentTxHash] = useState("");
-  const [provider, setProvider] = useState("ollama");
+  const [provider, setProvider] = useState("standby");
   const [startedAt] = useState(Date.now());
   const [beat, setBeat] = useState(0);
 
@@ -197,7 +197,7 @@ export default function Page() {
 
   const metrics = useMemo(
     () => [
-      { label: "Testnet Wallet", value: formatAddress(liveState?.stats.walletAddress ?? walletAddress), hint: "Injected or placeholder" },
+      { label: "Testnet Wallet", value: formatAddress(liveState?.stats.walletAddress ?? walletAddress), hint: "Browser wallet or placeholder" },
       { label: "USDC Wallet Balance", value: liveState?.stats.nativeBalance ?? "0.00", hint: "Displayed as one Arc wallet balance", accent: "neutral" as const },
       {
         label: "All-time PnL",
@@ -216,6 +216,7 @@ export default function Page() {
   );
 
   const biggestWin = formatCurrency(liveState?.stats.biggestWin ?? 0);
+  const displayChainId = chainId === ARC_CHAIN_ID ? chainId : null;
 
   return (
     <main className="min-h-screen px-4 py-6 md:px-6">
@@ -338,7 +339,7 @@ export default function Page() {
             <WalletPanel
               address={walletAddress}
               displayBalance={liveState?.stats.nativeBalance ?? "0.00"}
-              chainId={chainId}
+              chainId={displayChainId}
               walletConnected={walletConnected}
               onConnect={connectWallet}
               onSwitch={switchToArc}

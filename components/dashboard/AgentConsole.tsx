@@ -48,7 +48,7 @@ export function AgentConsole({ onProviderUpdate }: AgentConsoleProps) {
     <Card className="p-4">
       <div className="mb-4 flex items-center justify-between">
         <h2 className="text-sm uppercase tracking-[0.24em] text-terminal-text">Agent Console</h2>
-        <p className="text-xs text-terminal-muted">Groq for hard reasoning, Ollama default fallback</p>
+        <p className="text-xs text-terminal-muted">Groq on hosted demos, Ollama for local development</p>
       </div>
       <div className="flex flex-col gap-3">
         <div className="flex flex-col gap-2 md:flex-row">
