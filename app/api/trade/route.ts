@@ -71,10 +71,10 @@ export async function POST(request: Request) {
     });
   }
 
-  if (PAPER_TRADING_ONLY || REAL_TRADING_DISABLED) {
+  if (PAPER_TRADING_ONLY) {
     return NextResponse.json({
       ok: false,
-      message: "Non-paper execution is blocked because PAPER_TRADING_ONLY or REAL_TRADING_DISABLED is enabled."
+      message: "Non-paper execution is blocked because PAPER_TRADING_ONLY is enabled."
     });
   }
 
@@ -82,6 +82,13 @@ export async function POST(request: Request) {
     return NextResponse.json({
       ok: false,
       message: "Explicit confirmation is required. This only logs a testnet trade intent. It is not real trading."
+    });
+  }
+
+  if (mode === "testnet-intent" && REAL_TRADING_DISABLED) {
+    return NextResponse.json({
+      ok: false,
+      message: "REAL_TRADING_DISABLED keeps local intent logging in simulation mode only. Use browser-wallet contract mode for explicit testnet confirmation."
     });
   }
 

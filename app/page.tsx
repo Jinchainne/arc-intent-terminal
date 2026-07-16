@@ -198,8 +198,7 @@ export default function Page() {
   const metrics = useMemo(
     () => [
       { label: "Testnet Wallet", value: formatAddress(liveState?.stats.walletAddress ?? walletAddress), hint: "Injected or placeholder" },
-      { label: "ERC-20 USDC Balance", value: liveState?.stats.erc20Balance ?? "0.00", hint: "6 decimals", accent: "neutral" as const },
-      { label: "Native USDC Gas", value: liveState?.stats.nativeBalance ?? "0.00", hint: "18 decimals", accent: "neutral" as const },
+      { label: "USDC Wallet Balance", value: liveState?.stats.nativeBalance ?? "0.00", hint: "Displayed as one Arc wallet balance", accent: "neutral" as const },
       {
         label: "All-time PnL",
         value: formatCurrency(liveState?.stats.allTimePnl ?? 0),
@@ -243,7 +242,7 @@ export default function Page() {
                     ? formatAddress(liveState?.stats.walletAddress ?? walletAddress)
                     : "Not Connected"}
                 </p>
-                <p className="mt-1 text-[10px] uppercase tracking-[0.2em] text-terminal-muted">Arc / Polygon / On-chain</p>
+                <p className="mt-1 text-[10px] uppercase tracking-[0.2em] text-terminal-muted">Arc / USDC / On-chain</p>
               </div>
               <span className="border border-terminal-positive/30 bg-[#dcefd9] px-2 py-1 text-[10px] uppercase tracking-[0.24em] text-terminal-positive">
                 Verified
@@ -338,8 +337,7 @@ export default function Page() {
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-1">
             <WalletPanel
               address={walletAddress}
-              nativeBalance={liveState?.stats.nativeBalance ?? "0.00"}
-              erc20Balance={liveState?.stats.erc20Balance ?? "0.00"}
+              displayBalance={liveState?.stats.nativeBalance ?? "0.00"}
               chainId={chainId}
               walletConnected={walletConnected}
               onConnect={connectWallet}
@@ -381,9 +379,9 @@ export default function Page() {
             </div>
             <div className="md:col-span-2 xl:col-span-1 border border-terminal-border bg-terminal-panel p-4 text-sm leading-7 text-terminal-muted">
               <p>Arc chain target: {ARC_CHAIN_ID}</p>
-              <p>Native USDC gas uses 18 decimals. ERC-20 USDC uses 6 decimals.</p>
+              <p>USDC is displayed as a single Arc wallet asset while native gas still uses 18-decimal settlement under the hood.</p>
               <p>All fills, PnL, and strategy outputs shown here are simulation-first and testnet-only.</p>
-              <p>On-chain activity can use browser wallet confirmation or an optional burner key in testnet-only mode.</p>
+              <p>On-chain activity requires explicit browser-wallet confirmation on Arc Testnet.</p>
             </div>
           </div>
         </div>

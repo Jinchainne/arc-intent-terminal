@@ -5,7 +5,6 @@ type PlannerInput = {
   risk: RiskStatus;
   signal: StrategySignal;
   latestTrade: TradeRecord | null;
-  signerReady: boolean;
 };
 
 export function deriveAutoBotPlanner(input: PlannerInput) {
@@ -26,15 +25,6 @@ export function deriveAutoBotPlanner(input: PlannerInput) {
       nextAction: "Deploy or configure an ArcTradeIntentLedger before the next cycle.",
       lastDecision: "Execution stayed in observation mode because no ledger address is configured.",
       blockedReason: "Ledger missing."
-    };
-  }
-
-  if (input.autoBot.mode === "burner-key" && !input.signerReady) {
-    return {
-      objective,
-      nextAction: "Load AUTO_BURNER_PRIVATE_KEY or switch to Browser Wallet Mode.",
-      lastDecision: "Burner execution was blocked because the signer is unavailable.",
-      blockedReason: "Burner signer missing."
     };
   }
 
@@ -70,10 +60,7 @@ export function deriveAutoBotPlanner(input: PlannerInput) {
   if (input.latestTrade?.status === "intent-pending") {
     return {
       objective,
-      nextAction:
-        input.autoBot.mode === "burner-key"
-          ? "Watch the pending intent and retry only if the transaction stays stuck."
-          : "Confirm the pending intent with your browser wallet.",
+      nextAction: "Confirm the pending intent with your browser wallet.",
       lastDecision: `The planner prepared ${input.latestTrade.market} ${input.latestTrade.side} and is waiting for the next execution step.`,
       blockedReason: ""
     };

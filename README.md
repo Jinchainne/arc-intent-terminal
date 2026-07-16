@@ -1,6 +1,6 @@
 # Arc Quant Agent Dashboard
 
-Arc Quant Agent Dashboard is a local-first Arc Testnet builder agent: a realtime quant-terminal UI that can simulate signals, plan execution, persist state, prepare testnet intents, and optionally submit Arc testnet contract writes through either a browser wallet or a burner signer.
+Arc Quant Agent Dashboard is a local-first Arc Testnet builder agent: a realtime quant-terminal UI that can simulate signals, plan execution, persist state, prepare testnet intents, and submit Arc testnet contract writes through explicit browser-wallet confirmation.
 
 This project is built for builders, demos, hackathons, and testnet experimentation. It is not a mainnet trading system and it does not claim real profit.
 
@@ -10,11 +10,29 @@ This project is built for builders, demos, hackathons, and testnet experimentati
 - Strategy engine with signal, risk, execution, and settlement phases
 - Persistent local memory in `data/sim-state.json`
 - Browser wallet flow for manual Arc testnet confirmation
-- Burner mode for autonomous testnet-only submission
 - Local 24/7 worker runner
 - Hosted scheduler path using GitHub Actions -> Vercel `/api/runner`
 - Agent console backed by Ollama locally or Groq in hosted mode
 - On-chain activity tape for intents, tx submission, pending state, and confirmation
+
+## Quick Demo Flow
+
+Use this order when you need a fast, clean product demo:
+
+1. Run `npm run dev`
+2. Run `npm run agent:runner`
+3. Open the dashboard and let a few cycles populate
+4. Connect browser wallet and switch to Arc Testnet `5042002`
+5. Deploy or load `ArcTradeIntentLedger`
+6. Arm the bot in Browser Wallet Mode
+7. Confirm one pending testnet intent in your wallet
+8. Show the tx hash and explorer link in `On-chain Activity`
+
+Submission kit:
+
+- demo flow: `docs/submission/README-demo-flow.md`
+- video checklist: `docs/submission/video-checklist.md`
+- demo script: `docs/submission/demo-script.md`
 
 ## Builder Value
 
@@ -118,7 +136,6 @@ Never mix them.
 - `testnet-intent` mode
 - `testnet-contract` mode
 - Browser Wallet Mode
-- Burner Mode
 - Local worker runner
 - Hosted runner endpoint
 
@@ -188,10 +205,9 @@ Testnet execution envs:
 
 ```env
 PAPER_TRADING_ONLY=false
-REAL_TRADING_DISABLED=false
+REAL_TRADING_DISABLED=true
 NEXT_PUBLIC_ENABLE_TESTNET_CONTRACT_MODE=true
 NEXT_PUBLIC_TRADE_INTENT_LEDGER_ADDRESS=0x...
-AUTO_BURNER_PRIVATE_KEY=0x...
 RUNNER_SECRET=...
 CRON_SECRET=...
 AGENT_RUNNER_INTERVAL_MS=12000
@@ -200,8 +216,8 @@ AGENT_RUNNER_INTERVAL_MS=12000
 Important notes:
 
 - restart the dev server after changing `.env.local`
-- use a disposable burner wallet for `AUTO_BURNER_PRIVATE_KEY`
-- do not use a mainnet private key here
+- browser-wallet confirmation is the only supported on-chain submission path
+- do not use mainnet keys or server-side private keys here
 
 ## Local Run
 
@@ -273,13 +289,6 @@ npm run build
 - user confirms the latest pending intent using injected wallet
 - good for demo safety and manual review
 
-### Burner Mode
-
-- bot signs and submits directly from the server
-- requires `AUTO_BURNER_PRIVATE_KEY`
-- testnet only
-- use a disposable burner wallet only
-
 ## Runner Model
 
 There are two practical runner paths in this repo:
@@ -313,7 +322,6 @@ contracts/ArcTradeIntentLedger.sol
 The contract panel supports:
 
 - browser-wallet deployment
-- burner deployment
 - deployment tx status polling
 - ledger-address persistence
 
@@ -336,8 +344,7 @@ The contract panel supports:
 2. Set `NEXT_PUBLIC_TRADE_INTENT_LEDGER_ADDRESS`
 3. Restart local dev server
 4. Connect browser wallet and switch to Arc Testnet if using manual confirmation
-5. Or configure burner mode for autonomous submission
-6. Arm the bot
+5. Arm the bot
 7. Observe:
    - `Auto Bot`
    - `Recent Trades`
@@ -349,7 +356,7 @@ Expected result:
 - local state advances
 - planner updates
 - pending or submitted intents appear
-- tx hashes become visible when chain write succeeds
+- tx hashes become visible when browser-wallet confirmation succeeds
 
 ## Hosted Deployment
 
@@ -367,10 +374,9 @@ AI_BASE_URL=https://api.groq.com/openai/v1
 AI_MODEL=llama-3.3-70b-versatile
 AGENT_PROVIDER=auto
 PAPER_TRADING_ONLY=false
-REAL_TRADING_DISABLED=false
+REAL_TRADING_DISABLED=true
 NEXT_PUBLIC_ENABLE_TESTNET_CONTRACT_MODE=true
 NEXT_PUBLIC_TRADE_INTENT_LEDGER_ADDRESS=0x...
-AUTO_BURNER_PRIVATE_KEY=0x...
 RUNNER_SECRET=...
 CRON_SECRET=...
 ```
@@ -456,7 +462,6 @@ Check these first:
 3. Is `NEXT_PUBLIC_ENABLE_TESTNET_CONTRACT_MODE=true`?
 4. Is the ledger address set?
 5. Did the browser wallet confirmation appear?
-6. Is the burner key configured if using burner mode?
 
 ### Dashboard looks alive but bot is not really running
 
@@ -467,14 +472,12 @@ To make the bot actually advance cycles:
 - locally: run `npm run agent:runner`
 - hosted: verify GitHub Actions scheduler is active
 
-### Wallet is disconnected but backend bot still works
+### Wallet is disconnected so testnet confirmation cannot proceed
 
-That is expected in burner mode.
+That is expected in browser-wallet mode.
 
 - browser wallet state belongs to the viewer
-- burner signer belongs to the backend runner
-
-The UI now keeps those two identities separate.
+- pending intents stay local until the viewer confirms them
 
 ### Hosted app says Ollama is unavailable
 
@@ -506,8 +509,6 @@ If needed:
 
 - testnet only
 - browser-wallet mode is confirmation-first
-- burner mode is testnet-only
-- use a disposable burner signer
 - do not use mainnet keys
 - do not treat simulation PnL as real performance
 
@@ -518,7 +519,7 @@ If you are using this repo for a builder submission, the strongest demo sequence
 1. show the live dashboard
 2. show planner + blocker intelligence
 3. show the contract panel
-4. show the auto bot in burner or browser-wallet mode
+4. show the auto bot preparing intents for browser-wallet confirmation
 5. show recent trades and on-chain activity
 6. open Arc explorer links from the UI
 

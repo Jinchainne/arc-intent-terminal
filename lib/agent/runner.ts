@@ -3,7 +3,7 @@ import { formatUnits } from "viem";
 import { appendActivityLog } from "@/lib/agent/activityLog";
 import { ARC_CHAIN_ID } from "@/lib/arc/constants";
 import { getArcBalances, getRpcHealth } from "@/lib/arc/rpc";
-import { getArcTxStatus, getBurnerSignerAddress } from "@/lib/arc/serverExecutor";
+import { getArcTxStatus } from "@/lib/arc/serverExecutor";
 import { buildSimulationStateSnapshot, runExecutionCycle } from "@/lib/trading/executionCycle";
 import { persistTradeStore, reloadTradeStore } from "@/lib/trading/persistence";
 import { tradeStore } from "@/lib/trading/tradeStore";
@@ -37,10 +37,8 @@ function hasPendingRunnerWindow() {
 
 async function resolveRuntimeContext(addressOverride?: string) {
   const requestedAddress = addressOverride ?? "0x0000000000000000000000000000000000000000";
-  const burnerAddress = getBurnerSignerAddress();
   const autoActive = tradeStore.autoBot.enabled && Boolean(tradeStore.autoBot.ledgerAddress);
-  const effectiveAddress =
-    autoActive && tradeStore.autoBot.mode === "burner-key" && burnerAddress ? burnerAddress : requestedAddress;
+  const effectiveAddress = requestedAddress;
 
   let rpcHealthy = false;
   let chainId: number | null = null;
@@ -71,10 +69,7 @@ async function resolveRuntimeContext(addressOverride?: string) {
     rpcHealthy,
     chainId: chainId ?? ARC_CHAIN_ID,
     requestedAddress,
-    walletConnected:
-      autoActive && tradeStore.autoBot.mode === "burner-key"
-        ? Boolean(burnerAddress)
-        : requestedAddress !== "0x0000000000000000000000000000000000000000",
+    walletConnected: requestedAddress !== "0x0000000000000000000000000000000000000000",
     effectiveAddress,
     viewerNativeBalance,
     viewerErc20Balance,

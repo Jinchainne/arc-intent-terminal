@@ -8,7 +8,6 @@ export type AgentTriggerSource =
   | "vercel-cron"
   | "manual-wallet"
   | "manual-trade"
-  | "burner-executor"
   | "api";
 export type ChainActivityStatus =
   | "info"
@@ -27,7 +26,7 @@ export type MarketCandle = {
 export type StrategyAction = "BUY" | "SELL" | "HOLD";
 export type StrategyName = "Momentum" | "Mean Reversion" | "Volatility Breakout";
 export type ExecutionMode = "paper" | "testnet-intent" | "testnet-contract";
-export type AutoBotMode = "manual-wallet" | "burner-key";
+export type AutoBotMode = "manual-wallet";
 
 export type StrategySignal = {
   market: MarketSymbol;

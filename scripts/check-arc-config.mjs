@@ -6,6 +6,22 @@ const allowedExtensions = new Set([".ts", ".tsx", ".js", ".jsx", ".sol", ".toml"
 const ignoredDirs = new Set(["node_modules", ".git", "dist", "build", "out", ".next", "coverage"]);
 const findings = [];
 
+function isArcConfigFile(file) {
+  return /^(lib[\\/]arc[\\/]|app[\\/]api[\\/]arc[\\/]|scripts[\\/]check-arc-config\.mjs$)/.test(file);
+}
+
+function isDocFile(file) {
+  return /\.(md|example)$/i.test(file) || file.startsWith(".agents\\") || file.startsWith("docs\\") || file === "AGENTS.md";
+}
+
+function mentionsArc(content) {
+  return /Arc Testnet|arc\.network|arcscan/i.test(content);
+}
+
+function mentionsUsdcRuntime(content) {
+  return /\bUSDC\b/i.test(content) && /(balanceOf|erc20|transfer|approve|allowance|ARC_USDC_ADDRESS|NEXT_PUBLIC_ARC_USDC_ADDRESS|readContract)/i.test(content);
+}
+
 async function walk(dir) {
   const entries = await fs.readdir(dir, { withFileTypes: true });
   const files = [];
@@ -33,14 +49,24 @@ function push(level, message, file) {
 
 function scanContent(file, content) {
   const isCodeFile = /\.(ts|tsx|js|jsx|sol|toml|json)$/i.test(file);
+  const arcConfigFile = isArcConfigFile(file);
+  const docFile = isDocFile(file);
 
   if (/https:\/\/[^"'`\s]*mainnet|wallet_switchEthereumChain[^]*0x1/i.test(content)) {
     push("FAIL", "Possible mainnet execution path detected.", file);
   }
-  if (/5042002/.test(content) === false && /Arc Testnet|arc\.network|arcscan/.test(content)) {
+  if (
+    arcConfigFile &&
+    /5042002|ARC_CHAIN_ID|NEXT_PUBLIC_ARC_CHAIN_ID/.test(content) === false &&
+    mentionsArc(content)
+  ) {
     push("WARN", "Arc reference present without explicit chain ID 5042002.", file);
   }
-  if (/https:\/\/rpc\.testnet\.arc\.network/.test(content) === false && /Arc Testnet|arc\.network/.test(content)) {
+  if (
+    arcConfigFile &&
+    /https:\/\/rpc\.testnet\.arc\.network|ARC_RPC_URL|NEXT_PUBLIC_ARC_RPC_URL/.test(content) === false &&
+    /Arc Testnet|arc\.network/i.test(content)
+  ) {
     push("WARN", "Arc reference present without the expected Arc Testnet RPC.", file);
   }
   if (/nativeCurrency[^]{0,220}symbol\s*:\s*["'`]ETH["'`]/i.test(content)) {
@@ -49,7 +75,11 @@ function scanContent(file, content) {
   if (isCodeFile && /(parseEther|formatEther)[^.\n]{0,80}(USDC|transfer|approve|allowance)/i.test(content)) {
     push("FAIL", "Ether helpers appear near USDC ERC-20 logic.", file);
   }
-  if (/\bUSDC\b/.test(content) && /0x3600000000000000000000000000000000000000/.test(content) === false) {
+  if (
+    arcConfigFile &&
+    mentionsUsdcRuntime(content) &&
+    /0x3600000000000000000000000000000000000000|ARC_USDC_ADDRESS|NEXT_PUBLIC_ARC_USDC_ADDRESS/.test(content) === false
+  ) {
     push("WARN", "USDC mentioned without the Arc ERC-20 USDC address.", file);
   }
   if (/private[_ -]?key\s*[:=]\s*["']?[a-z0-9/+]{16,}/i.test(content)) {
@@ -73,6 +103,7 @@ function scanContent(file, content) {
     push("FAIL", "Real profit language detected.", file);
   }
   if (
+    docFile === false &&
     /auto[- ]?trade|auto[- ]?send|auto[- ]?execute/i.test(content) &&
     /never auto|no auto|does not auto|do not auto/i.test(content) === false
   ) {

@@ -41,8 +41,8 @@ export function evaluateRisk(input: {
   if (input.mode === "testnet-contract" && !ENABLE_TESTNET_CONTRACT_MODE) {
     flags.push("Testnet contract mode disabled by config.");
   }
-  if (input.mode !== "paper" && REAL_TRADING_DISABLED) {
-    flags.push("REAL_TRADING_DISABLED prevents any automatic execution.");
+  if (input.mode === "testnet-intent" && REAL_TRADING_DISABLED) {
+    flags.push("REAL_TRADING_DISABLED keeps local intent logging in simulation mode only.");
   }
   if (fromUsdc6(input.signal.notionalUsdc6).includes(".")) {
     const [whole, fraction = ""] = fromUsdc6(input.signal.notionalUsdc6).split(".");

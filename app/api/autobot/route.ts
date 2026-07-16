@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 
 import { appendActivityLog } from "@/lib/agent/activityLog";
-import { getBurnerSignerAddress } from "@/lib/arc/serverExecutor";
 import { persistTradeStore, reloadTradeStore } from "@/lib/trading/persistence";
 import { tradeStore } from "@/lib/trading/tradeStore";
 
@@ -14,7 +13,8 @@ export async function GET() {
 
   return NextResponse.json({
     ...tradeStore.autoBot,
-    signerAddress: tradeStore.autoBot.mode === "burner-key" ? getBurnerSignerAddress() : "",
+    mode: "manual-wallet",
+    signerAddress: "",
     pendingCount: tradeStore.trades.filter((trade) => trade.status === "intent-pending").length,
     latestPending: latestPending
       ? {
@@ -35,7 +35,7 @@ export async function POST(request: Request) {
   const body = (await request.json()) as {
     action?: "save" | "confirm-pending" | "reset-stats" | "reset-strategy";
     enabled?: boolean;
-    mode?: "manual-wallet" | "burner-key";
+    mode?: "manual-wallet";
     ledgerAddress?: string;
     notionalUsdc?: string;
     cooldownMs?: number;
@@ -108,7 +108,7 @@ export async function POST(request: Request) {
   tradeStore.autoBot = {
     ...tradeStore.autoBot,
     enabled: body.enabled ?? tradeStore.autoBot.enabled,
-    mode: body.mode ?? tradeStore.autoBot.mode,
+    mode: "manual-wallet",
     ledgerAddress: body.ledgerAddress ?? tradeStore.autoBot.ledgerAddress,
     notionalUsdc: body.notionalUsdc ?? tradeStore.autoBot.notionalUsdc,
     cooldownMs: body.cooldownMs ?? tradeStore.autoBot.cooldownMs,

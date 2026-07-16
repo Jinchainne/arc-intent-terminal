@@ -2,7 +2,6 @@ import { EXECUTION_PHASES, SIM_STARTING_USDC, SIM_TICK_MS } from "@/lib/arc/cons
 import { appendActivityLog } from "@/lib/agent/activityLog";
 import { deriveAutoBotPlanner } from "@/lib/agent/autobotPlanner";
 import { fromUsdc6, toUsdc6 } from "@/lib/arc/usdc";
-import { submitTradeIntentWithBurner } from "@/lib/arc/serverExecutor";
 import { advanceMarketState, createInitialMarketState } from "@/lib/trading/marketSimulator";
 import { runMonteCarlo } from "@/lib/trading/monteCarlo";
 import { persistTradeStore } from "@/lib/trading/persistence";
@@ -69,9 +68,8 @@ export async function runExecutionCycle(input: {
 }) {
   const markets = advanceMarketState(tradeStore.markets ?? createInitialMarketState());
   tradeStore.markets = markets;
-  if (tradeStore.autoBot.mode === "burner-key" && input.address !== "0x0000000000000000000000000000000000000000") {
-    tradeStore.autoBot.signerAddress = input.address;
-  }
+  tradeStore.autoBot.mode = "manual-wallet";
+  tradeStore.autoBot.signerAddress = "";
 
   const selectedMarket = Object.keys(markets)[Math.floor(Math.random() * Object.keys(markets).length)] as
     | keyof typeof markets
@@ -145,63 +143,18 @@ export async function runExecutionCycle(input: {
       trade.reason = buildAutoIntentReason(trade.reason);
       tradeStore.autoBot.lastRunAt = now;
 
-      if (tradeStore.autoBot.mode === "manual-wallet") {
-        trade.status = "intent-pending";
-        trade.chainStatus = "prepared";
-        tradeStore.autoBot.totalPrepared += 1;
-        tradeStore.autoBot.lastError = null;
-        tradeStore.autoBot.lastMessage = `Prepared ${trade.market} ${trade.side} intent. Manual wallet confirmation is required.`;
-        appendActivityLog({
-          source: input.source,
-          kind: "intent",
-          status: "prepared",
-          message: `Prepared ${trade.market} ${trade.side} for browser-wallet confirmation.`,
-          market: trade.market
-        });
-      } else {
-        try {
-          const submitted = await submitTradeIntentWithBurner({
-            ledgerAddress: tradeStore.autoBot.ledgerAddress as `0x${string}`,
-            market: trade.market,
-            side: trade.side,
-            notionalUsdc6: trade.notionalUsdc6,
-            confidence: trade.confidence,
-            reason: trade.reason
-          });
-          trade.status = "intent-logged";
-          trade.txHash = submitted.hash;
-          trade.chainStatus = "confirmed";
-          trade.submittedAt = Date.now();
-          trade.confirmedAt = Date.now();
-          tradeStore.autoBot.signerAddress = submitted.signerAddress;
-          tradeStore.autoBot.totalPrepared += 1;
-          tradeStore.autoBot.totalSubmitted += 1;
-          tradeStore.autoBot.lastError = null;
-          tradeStore.autoBot.lastMessage = `Burner submitted ${trade.market} ${trade.side} on Arc testnet.`;
-          appendActivityLog({
-            source: "burner-executor",
-            kind: "tx",
-            status: "confirmed",
-            message: `Burner confirmed ${trade.market} ${trade.side} on Arc testnet.`,
-            market: trade.market,
-            txHash: submitted.hash
-          });
-        } catch (error) {
-          trade.status = "intent-pending";
-          trade.chainStatus = "error";
-          tradeStore.autoBot.totalPrepared += 1;
-          tradeStore.autoBot.lastError =
-            error instanceof Error ? error.message : "Burner signer could not write to Arc testnet.";
-          tradeStore.autoBot.lastMessage = "Burner mode prepared an intent but could not submit it on-chain.";
-          appendActivityLog({
-            source: "burner-executor",
-            kind: "tx",
-            status: "error",
-            message: tradeStore.autoBot.lastError,
-            market: trade.market
-          });
-        }
-      }
+      trade.status = "intent-pending";
+      trade.chainStatus = "prepared";
+      tradeStore.autoBot.totalPrepared += 1;
+      tradeStore.autoBot.lastError = null;
+      tradeStore.autoBot.lastMessage = `Prepared ${trade.market} ${trade.side} intent. Browser wallet confirmation is required.`;
+      appendActivityLog({
+        source: input.source,
+        kind: "intent",
+        status: "prepared",
+        message: `Prepared ${trade.market} ${trade.side} for browser-wallet confirmation.`,
+        market: trade.market
+      });
     }
   }
   finalizeExecutionCycle({
@@ -287,8 +240,7 @@ function finalizeExecutionCycle(input: {
     autoBot: tradeStore.autoBot,
     risk: input.risk,
     signal: input.signal,
-    latestTrade: input.trade,
-    signerReady: tradeStore.autoBot.mode === "burner-key" ? Boolean(tradeStore.autoBot.signerAddress) : true
+    latestTrade: input.trade
   });
   tradeStore.autoBot.objective = planner.objective;
   tradeStore.autoBot.lastDecision = planner.lastDecision;

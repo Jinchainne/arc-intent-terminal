@@ -10,8 +10,7 @@ import { formatAddress } from "@/lib/utils/format";
 
 type WalletPanelProps = {
   address: string;
-  nativeBalance: string;
-  erc20Balance: string;
+  displayBalance: string;
   chainId: number | null;
   walletConnected: boolean;
   onConnect: () => Promise<void>;
@@ -21,8 +20,7 @@ type WalletPanelProps = {
 
 export function WalletPanel({
   address,
-  nativeBalance,
-  erc20Balance,
+  displayBalance,
   chainId,
   walletConnected,
   onConnect,
@@ -38,8 +36,7 @@ export function WalletPanel({
       <div className="space-y-3 text-sm">
         <Row label="Address" value={walletConnected ? formatAddress(address) : "Connect injected wallet"} />
         <Row label="Chain ID" value={chainId ? `${chainId}` : "Unknown"} />
-        <Row label="Native USDC Gas (18)" value={nativeBalance} />
-        <Row label="ERC-20 USDC (6)" value={erc20Balance} />
+        <Row label="USDC Balance" value={displayBalance} />
       </div>
       <div className="mt-4 flex flex-wrap gap-2">
         <Button onClick={onConnect}>Connect Wallet</Button>

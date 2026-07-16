@@ -6,12 +6,11 @@ import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
 import { logTradeIntentWithBrowserWallet } from "@/lib/arc/wallet";
-import { formatAddress } from "@/lib/utils/format";
 import { formatUtc } from "@/lib/utils/time";
 
 type AutoBotConfig = {
   enabled: boolean;
-  mode: "manual-wallet" | "burner-key";
+  mode: "manual-wallet";
   ledgerAddress: string;
   notionalUsdc: string;
   cooldownMs: number;
@@ -198,7 +197,6 @@ export function AutoBotPanel({ defaultLedgerAddress, walletConnected, onRefresh 
             }
           >
             <option value="manual-wallet">Browser Wallet Mode</option>
-            <option value="burner-key">Burner Mode</option>
           </select>
         </label>
         <label className="space-y-2 text-xs uppercase tracking-[0.18em] text-terminal-muted">
@@ -254,13 +252,9 @@ export function AutoBotPanel({ defaultLedgerAddress, walletConnected, onRefresh 
         <Row
           label="Signer"
           value={
-            config.mode === "burner-key"
-              ? config.signerAddress
-                ? formatAddress(config.signerAddress)
-                : "Set AUTO_BURNER_PRIVATE_KEY"
-              : walletConnected
-                ? "Browser wallet"
-                : "Connect wallet to confirm"
+            walletConnected
+              ? "Browser wallet"
+              : "Connect wallet to confirm"
           }
         />
       </div>
@@ -295,16 +289,11 @@ export function AutoBotPanel({ defaultLedgerAddress, walletConnected, onRefresh 
           Runner looks stale. Start `npm run agent:runner` locally or verify the Vercel cron is active.
         </div>
       ) : null}
-      <div className="mt-3 grid gap-2 text-[11px] text-terminal-muted md:grid-cols-2">
+      <div className="mt-3 grid gap-2 text-[11px] text-terminal-muted">
         <div className="border border-terminal-border bg-terminal-panelAlt px-3 py-2">
           `Browser Wallet Mode`
           <br />
-          Bot tự tạo testnet intent. Bạn chỉ xác nhận tx cuối cùng bằng ví trình duyệt.
-        </div>
-        <div className="border border-terminal-border bg-terminal-panelAlt px-3 py-2">
-          `Burner Mode`
-          <br />
-          Bot tự ký và tự gửi tx testnet bằng `AUTO_BURNER_PRIVATE_KEY` trên server.
+          Bot tự tạo testnet intent. Bạn tự xác nhận giao dịch cuối cùng bằng ví trình duyệt trên Arc Testnet.
         </div>
       </div>
     </Card>
