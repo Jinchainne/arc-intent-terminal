@@ -2,12 +2,14 @@
 
 import { Card } from "@/components/ui/Card";
 import { ARC_EXPLORER_URL } from "@/lib/arc/constants";
+import { createFallbackActivity } from "@/lib/trading/fallbackPreview";
 import type { SimulationState } from "@/lib/trading/types";
 import { formatAddress } from "@/lib/utils/format";
 import { formatUtc } from "@/lib/utils/time";
 
 export function ChainActivityPanel({ state }: { state: SimulationState | null }) {
-  const rows = state?.activityLog?.slice(0, 10) ?? [];
+  const liveRows = state?.activityLog?.slice(0, 10) ?? [];
+  const rows = liveRows.length ? liveRows : createFallbackActivity();
 
   return (
     <Card className="p-4">
@@ -16,15 +18,10 @@ export function ChainActivityPanel({ state }: { state: SimulationState | null })
         <p className="text-xs text-terminal-muted">Runner, intents, tx confirmations</p>
       </div>
       <div className="space-y-2 text-xs">
-        {rows.length === 0 ? (
-          <div className="border border-terminal-border px-3 py-3 text-terminal-muted">
-            No chain activity yet. Arm the bot or submit a testnet intent.
-          </div>
-        ) : null}
         {rows.map((entry) => (
           <div
             key={entry.id}
-            className="grid grid-cols-[74px_74px_1fr_84px] items-start gap-3 border border-terminal-border px-3 py-2"
+            className="grid grid-cols-[70px_72px_1fr_74px] items-start gap-3 border border-terminal-border px-3 py-2"
           >
             <div className={statusClassName(entry.status)}>{entry.status.toUpperCase()}</div>
             <div className="text-terminal-muted">{entry.source}</div>
@@ -44,6 +41,11 @@ export function ChainActivityPanel({ state }: { state: SimulationState | null })
             <div className="text-right text-terminal-muted">{formatUtc(entry.timestamp).slice(11, 19)}</div>
           </div>
         ))}
+        {!liveRows.length ? (
+          <div className="border border-terminal-border bg-terminal-panelAlt px-3 py-2 text-[11px] uppercase tracking-[0.18em] text-terminal-muted">
+            Preview activity shown until the first live runner or wallet action lands
+          </div>
+        ) : null}
       </div>
     </Card>
   );

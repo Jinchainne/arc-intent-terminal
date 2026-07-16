@@ -1,9 +1,14 @@
 import { Card } from "@/components/ui/Card";
+import { createFallbackMonteCarlo } from "@/lib/trading/fallbackPreview";
 import { formatCurrency } from "@/lib/utils/format";
 import type { SimulationState } from "@/lib/trading/types";
 
 export function MonteCarloPanel({ state }: { state: SimulationState | null }) {
-  const monteCarlo = state?.monteCarlo;
+  const hasMonteCarlo =
+    Boolean(state?.monteCarlo?.histogram?.length) ||
+    Boolean(state?.monteCarlo?.expectedReturn) ||
+    Boolean(state?.monteCarlo?.percentile95);
+  const monteCarlo = hasMonteCarlo ? state?.monteCarlo : createFallbackMonteCarlo();
   const histogram = monteCarlo?.histogram?.length
     ? monteCarlo.histogram
     : [18, 22, 15, 28, 24, 12, 26, 19, 31, 21, 17, 27];
@@ -35,7 +40,7 @@ export function MonteCarloPanel({ state }: { state: SimulationState | null }) {
               style={{ height: `${Math.max(8, (Math.abs(value) / max) * 100)}%` }}
             />
           ))}
-          {!monteCarlo?.histogram?.length ? (
+          {!hasMonteCarlo ? (
             <div className="absolute inset-x-0 bottom-2 text-center text-[10px] uppercase tracking-[0.18em] text-terminal-muted">
               Warmup projection until enough fills accumulate
             </div>

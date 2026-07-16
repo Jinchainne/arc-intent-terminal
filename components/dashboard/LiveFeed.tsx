@@ -3,12 +3,14 @@
 import { useEffect, useMemo, useRef } from "react";
 
 import { Card } from "@/components/ui/Card";
+import { createFallbackFeed } from "@/lib/trading/fallbackPreview";
 import type { SimulationState } from "@/lib/trading/types";
 import { formatUtc } from "@/lib/utils/time";
 
 export function LiveFeed({ state }: { state: SimulationState | null }) {
   const viewportRef = useRef<HTMLDivElement | null>(null);
-  const rows = useMemo(() => state?.feed ?? [], [state]);
+  const rows = useMemo(() => (state?.feed?.length ? state.feed : createFallbackFeed()), [state]);
+  const isPreview = !state?.feed?.length;
 
   useEffect(() => {
     const node = viewportRef.current;
@@ -60,6 +62,11 @@ export function LiveFeed({ state }: { state: SimulationState | null }) {
           ))}
         </div>
       </div>
+      {isPreview ? (
+        <p className="mt-3 text-[11px] uppercase tracking-[0.18em] text-terminal-muted">
+          Preview feed shown until the next live simulation event arrives
+        </p>
+      ) : null}
     </Card>
   );
 }

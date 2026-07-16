@@ -209,7 +209,7 @@ function Row({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex items-center justify-between gap-3 border border-terminal-border px-3 py-2">
       <span className="text-terminal-muted">{label}</span>
-      <span className="text-terminal-text">{value}</span>
+      <span className="max-w-[60%] truncate text-right text-terminal-text">{value}</span>
     </div>
   );
 }

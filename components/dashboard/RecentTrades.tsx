@@ -1,11 +1,13 @@
 import { ARC_EXPLORER_URL } from "@/lib/arc/constants";
 import { Card } from "@/components/ui/Card";
+import { createFallbackTrades } from "@/lib/trading/fallbackPreview";
 import type { SimulationState } from "@/lib/trading/types";
 import { formatAddress, formatCurrency, formatCompactNumber } from "@/lib/utils/format";
 import { formatUtc } from "@/lib/utils/time";
 
 export function RecentTrades({ state }: { state: SimulationState | null }) {
-  const trades = [...(state?.trades ?? [])].reverse().slice(0, 8);
+  const liveTrades = [...(state?.trades ?? [])].reverse().slice(0, 8);
+  const trades = liveTrades.length ? liveTrades : createFallbackTrades();
 
   return (
     <Card className="p-4">
@@ -14,13 +16,8 @@ export function RecentTrades({ state }: { state: SimulationState | null }) {
         <p className="text-xs text-terminal-muted">Persisted local intent and fill log</p>
       </div>
       <div className="space-y-2 text-xs">
-        {trades.length === 0 ? (
-          <div className="border border-terminal-border px-3 py-3 text-terminal-muted">
-            No trades yet. Run cycles or prepare a testnet intent.
-          </div>
-        ) : null}
         {trades.map((trade) => (
-          <div key={trade.id} className="grid grid-cols-[72px_1.1fr_88px_88px_90px] gap-3 border border-terminal-border px-3 py-2">
+          <div key={trade.id} className="grid grid-cols-[66px_1.2fr_80px_84px_74px] gap-3 border border-terminal-border px-3 py-2">
             <div className="text-terminal-muted">{formatUtc(trade.timestamp).slice(11, 19)}</div>
             <div className="text-terminal-text">
               <div>
@@ -50,6 +47,11 @@ export function RecentTrades({ state }: { state: SimulationState | null }) {
             </div>
           </div>
         ))}
+        {!liveTrades.length ? (
+          <div className="border border-terminal-border bg-terminal-panelAlt px-3 py-2 text-[11px] uppercase tracking-[0.18em] text-terminal-muted">
+            Preview trades shown until the first real simulation or intent is logged
+          </div>
+        ) : null}
       </div>
     </Card>
   );

@@ -287,7 +287,7 @@ export default function Page() {
 
         <ExecutionCycle currentPhase={liveState?.stats.currentPhase ?? "Scan"} beat={beat} />
 
-        <div className="grid gap-4 xl:grid-cols-[1.18fr_0.82fr]">
+        <div className="grid gap-4 xl:grid-cols-[1.24fr_0.76fr]">
           <div className="space-y-4">
             <div className="flex flex-wrap gap-2">
               {ARC_MARKETS.map((market) => (
@@ -305,11 +305,11 @@ export default function Page() {
               ))}
             </div>
             <StrategyDecisionTree state={liveState} beat={beat} />
-            <div className="grid gap-4 xl:grid-cols-[0.95fr_1.05fr]">
+            <div className="grid gap-4 xl:grid-cols-[0.98fr_1.02fr]">
               <RobustnessMatrix state={liveState} />
               <PnlGrowthChart state={liveState} />
             </div>
-            <div className="grid gap-4 xl:grid-cols-[0.92fr_1.08fr]">
+            <div className="grid gap-4 xl:grid-cols-[0.96fr_1.04fr]">
               <MonteCarloPanel state={liveState} />
               <RecentTrades state={liveState} />
             </div>
@@ -335,7 +335,7 @@ export default function Page() {
             <AgentConsole onProviderUpdate={setProvider} />
           </div>
 
-          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-1">
+          <div className="grid gap-4 xl:grid-cols-1">
             <WalletPanel
               address={walletAddress}
               displayBalance={liveState?.stats.nativeBalance ?? "0.00"}
@@ -364,7 +364,7 @@ export default function Page() {
                 }}
               />
             </div>
-            <div className="grid gap-4 md:col-span-2 md:grid-cols-2 xl:col-span-1">
+            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-1">
               {metrics.slice(0, 4).map((metric) => (
                 <MetricCard key={metric.label} {...metric} />
               ))}
@@ -372,13 +372,13 @@ export default function Page() {
                 <MetricCard key={metric.label} {...metric} />
               ))}
             </div>
-            <div className="md:col-span-2 xl:col-span-1">
+            <div>
               <LiveFeed state={liveState} />
             </div>
-            <div className="md:col-span-2 xl:col-span-1">
+            <div>
               <ChainActivityPanel state={liveState} />
             </div>
-            <div className="md:col-span-2 xl:col-span-1 border border-terminal-border bg-terminal-panel p-4 text-sm leading-7 text-terminal-muted">
+            <div className="border border-terminal-border bg-terminal-panel p-4 text-sm leading-7 text-terminal-muted">
               <p>Arc chain target: {ARC_CHAIN_ID}</p>
               <p>USDC is displayed as a single Arc wallet asset while native gas still uses 18-decimal settlement under the hood.</p>
               <p>All fills, PnL, and strategy outputs shown here are simulation-first and testnet-only.</p>
