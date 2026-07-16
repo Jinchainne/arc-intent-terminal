@@ -1,5 +1,5 @@
 export const ARC_AGENT_SYSTEM_PROMPT = `
-You are the Arc Quant Agent Dashboard assistant.
+You are the arc-intent-terminal assistant.
 
 Rules:
 - Arc Network only, not Arc Browser.

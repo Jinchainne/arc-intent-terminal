@@ -3,8 +3,8 @@ import type { Metadata } from "next";
 import "@/app/globals.css";
 
 export const metadata: Metadata = {
-  title: "Arc Quant Agent Dashboard",
-  description: "Arc Testnet simulation terminal for USDC-denominated quant-style workflows."
+  title: "arc-intent-terminal",
+  description: "Arc Testnet builder terminal for browser-confirmed trade intents, simulation, and explorer-verifiable workflow."
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
