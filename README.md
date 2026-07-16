@@ -1,4 +1,4 @@
-# arc-intent-terminal
+# Arc-intent-terminal
 
 `arc-intent-terminal` is a builder-first Arc Testnet app for the **Programmable Money Hackathon**.
 
