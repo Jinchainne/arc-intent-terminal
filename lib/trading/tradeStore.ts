@@ -8,6 +8,31 @@ import type {
   TradeRecord
 } from "@/lib/trading/types";
 
+export function createDefaultAutoBotState(): AutoBotState {
+  return {
+    enabled: false,
+    mode: "manual-wallet",
+    ledgerAddress: "",
+    notionalUsdc: "250",
+    cooldownMs: 12000,
+    objective: "Keep Arc testnet execution healthy and submit only high-quality intents.",
+    lastRunAt: null,
+    lastError: null,
+    lastMessage: "Auto bot idle. Configure a ledger and choose a testnet execution mode.",
+    lastDecision: "Planner not started yet.",
+    nextAction: "Configure a ledger, choose a mode, and arm the bot.",
+    blockedReason: "",
+    totalPrepared: 0,
+    totalSubmitted: 0,
+    signerAddress: "",
+    pendingCount: 0,
+    lastTriggerSource: "idle",
+    lastCycleStartedAt: null,
+    lastCycleCompletedAt: null,
+    cycleCount: 0
+  };
+}
+
 export const tradeStore: {
   markets: Record<MarketSymbol, { timestamp: number; price: number }[]>;
   trades: TradeRecord[];
@@ -40,26 +65,5 @@ export const tradeStore: {
     flags: []
   },
   allTimePnl: 0,
-  autoBot: {
-    enabled: false,
-    mode: "manual-wallet",
-    ledgerAddress: "",
-    notionalUsdc: "250",
-    cooldownMs: 12000,
-    objective: "Keep Arc testnet execution healthy and submit only high-quality intents.",
-    lastRunAt: null,
-    lastError: null,
-    lastMessage: "Auto bot idle. Configure a ledger and choose a testnet execution mode.",
-    lastDecision: "Planner not started yet.",
-    nextAction: "Configure a ledger, choose a mode, and arm the bot.",
-    blockedReason: "",
-    totalPrepared: 0,
-    totalSubmitted: 0,
-    signerAddress: "",
-    pendingCount: 0,
-    lastTriggerSource: "idle",
-    lastCycleStartedAt: null,
-    lastCycleCompletedAt: null,
-    cycleCount: 0
-  }
+  autoBot: createDefaultAutoBotState()
 };

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
-import { runAgentCycle } from "@/lib/agent/runner";
+import { readAgentSnapshot } from "@/lib/agent/runner";
 import { toJsonSafe } from "@/lib/utils/jsonResponse";
 
 export async function GET(request: NextRequest) {
@@ -8,10 +8,7 @@ export async function GET(request: NextRequest) {
     const address =
       request.nextUrl.searchParams.get("address") ??
       "0x0000000000000000000000000000000000000000";
-    const state = await runAgentCycle({
-      source: "dashboard",
-      address
-    });
+    const state = await readAgentSnapshot({ address });
 
     return NextResponse.json(toJsonSafe(state));
   } catch (error) {

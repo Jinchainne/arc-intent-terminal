@@ -120,6 +120,22 @@ async function syncLoggedTradeStatuses() {
   }
 }
 
+export async function readAgentSnapshot(input: { address?: string }) {
+  await reloadTradeStore();
+  await syncLoggedTradeStatuses();
+
+  const runtime = await resolveRuntimeContext(input.address);
+
+  return buildSimulationStateSnapshot({
+    walletAddress: runtime.requestedAddress,
+    nativeBalance: runtime.viewerNativeBalance,
+    erc20Balance: runtime.viewerErc20Balance,
+    rpcHealthy: runtime.rpcHealthy,
+    chainId: runtime.chainId,
+    lastTxHash: null
+  });
+}
+
 async function executeRunnerCycle(input: { source: AgentTriggerSource; address?: string; forceAdvance?: boolean }) {
   await reloadTradeStore();
   await syncLoggedTradeStatuses();
